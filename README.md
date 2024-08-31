@@ -1,5 +1,29 @@
 # `supply_chain_marketplace`
 
+Part of Coinstore Labs - ICP Web 3.0 Collision Hackathon (ICP Chain Fusion)
+
+## End-User Benefits
+
+For Suppliers:
+
+- Improved cash flow through early payment of invoices
+- Reduced dependence on traditional banking systems
+- Access to a wider pool of potential investors
+- Lower financing costs compared to traditional factoring
+
+For Investors:
+
+- Access to a new asset class with potentially higher yields
+- Ability to diversify investments across multiple industries and companies
+- Transparent risk assessment and pricing
+- Automated investment process with smart contract security
+
+For Buyers:
+
+- Improved supplier relationships through faster payment options
+- Potential for negotiating better terms with suppliers
+- Enhanced supply chain stability
+
 Welcome to your new `supply_chain_marketplace` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
 
 To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
