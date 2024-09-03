@@ -10,6 +10,11 @@ import Cycles "mo:base/ExperimentalCycles";
 
 actor SupplyChainMarketplace {
     // Custom hash function for Nat
+
+    public shared(msg) func getCaller() : async Principal {
+        msg.caller
+    };
+    
     private func natHash(n : Nat) : Nat32 {
         var x = Nat32.fromNat(n);
         x := (x ^ (x >> 16)) *% 0x85ebca6b;

@@ -7,6 +7,7 @@ function App() {
     <main>
       <section>
         {/* <InvoiceTest/> */}
+        <SupplyChainMarketplace/>
       </section>
     </main>
   );
