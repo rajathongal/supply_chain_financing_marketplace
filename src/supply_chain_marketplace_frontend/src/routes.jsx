@@ -2,12 +2,14 @@ import React, { Suspense, Fragment, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Loading from "./Components/Loading";
-import NoGuard from "./Guards/NoGuard";
 import ErrorBoundary from "./Utils/ErrorBoundary";
 import Layout from "./Components/Layout";
+import NoGuard from "./Guards/NoGuard";
+import GuestGuard from "./Guards/GuestGuard";
 
 // pages Imports
 const Home = lazy(() => import("./Pages/Home"));
+const Dashboard = lazy(() => import("./Pages/Dashboard"));
 
 const RenderRoutes = () => (
   <Routes>
@@ -53,6 +55,12 @@ const routes = [
     component: Home,
     title: "Home",
   },
+  {
+    guard: GuestGuard,
+    path: "/dashboard",
+    component: Dashboard,
+    title: "Dashboard",
+  }
 ];
 
 export default RenderRoutes;

@@ -7,17 +7,20 @@ import { ThemeProvider } from "@mui/material/styles";
 import Theme from "./Utils/BaseTheme";
 import RenderRoutes from "./routes";
 import { BrowserRouter as Router } from "react-router-dom";
-import CssBaseline from '@mui/material/CssBaseline';
+import CssBaseline from "@mui/material/CssBaseline";
+import { AuthProvider } from "./Context/useAuthClient";
 
 function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <ThemeProvider theme={Theme}>
-          <CssBaseline enableColorScheme/>
-          <RenderRoutes />
-        </ThemeProvider>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <ThemeProvider theme={Theme}>
+            <CssBaseline enableColorScheme />
+            <RenderRoutes />
+          </ThemeProvider>
+        </Router>
+      </AuthProvider>
     </HelmetProvider>
   );
 }

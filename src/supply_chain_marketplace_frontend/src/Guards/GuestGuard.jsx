@@ -1,14 +1,15 @@
 import React from "react";
-import { redirect } from "react-router-dom";
-import PropTypes from "prop-types";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../Context/useAuthClient";
 
 const GuestGuard = ({ children }) => {
-  const authenticated = false;
+  const { isAuthenticated } = useAuth();
 
-  if (authenticated) {
+
+  if (isAuthenticated) {
     return <>{children}</>;
   } else {
-    return <redirect to="/" />
+    return <Navigate to="/" replace={true}/>
   }
 };
 

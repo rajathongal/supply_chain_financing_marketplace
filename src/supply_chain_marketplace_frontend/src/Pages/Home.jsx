@@ -3,9 +3,9 @@ import Box from "@mui/material/Box";
 
 const Home = () => {
   return (
-    <Box >
-    <h1>Welcome to Home</h1>
-  </Box>
+    <Box height={"100vh"}>
+      <h1>Welcome to Home</h1>
+    </Box>
   );
 };
 
