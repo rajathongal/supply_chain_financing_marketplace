@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import Loading from "./Components/Loading";
 import NoGuard from "./Guards/NoGuard";
 import ErrorBoundary from "./Utils/ErrorBoundary";
+import Layout from "./Components/Layout";
 
 // pages Imports
 const Home = lazy(() => import("./Pages/Home"));
@@ -26,13 +27,15 @@ const RenderRoutes = () => (
                       pageTitle && `${pageTitle} - `
                     }SupplyHub`}</title>
                   </Helmet>
-                  <Suspense fallback={<Loading />}>
-                    {route.routes ? (
-                      renderRoutes(route.routes)
-                    ) : (
-                      <route.component />
-                    )}
-                  </Suspense>
+                  <Layout>
+                    <Suspense fallback={<Loading />}>
+                      {route.routes ? (
+                        renderRoutes(route.routes)
+                      ) : (
+                        <route.component />
+                      )}
+                    </Suspense>
+                  </Layout>
                 </Guard>
               </ErrorBoundary>
             </>

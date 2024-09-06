@@ -1,21 +1,11 @@
 import React from "react";
-import NavBar from "../Components/NavBar";
+import Box from "@mui/material/Box";
 
 const Home = () => {
   return (
-    <NavBar
-      position="fixed"
-      sx={{
-        boxShadow: 0,
-        bgcolor: "transparent",
-        backgroundImage: "none",
-        mt: 10,
-      }}
-    >
-      <div>
-        <h1>Welcome to Home</h1>
-      </div>
-    </NavBar>
+    <Box >
+    <h1>Welcome to Home</h1>
+  </Box>
   );
 };
 

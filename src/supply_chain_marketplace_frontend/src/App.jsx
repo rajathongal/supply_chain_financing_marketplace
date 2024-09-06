@@ -14,7 +14,7 @@ function App() {
     <HelmetProvider>
       <Router>
         <ThemeProvider theme={Theme}>
-          <CssBaseline/>
+          <CssBaseline enableColorScheme/>
           <RenderRoutes />
         </ThemeProvider>
       </Router>
