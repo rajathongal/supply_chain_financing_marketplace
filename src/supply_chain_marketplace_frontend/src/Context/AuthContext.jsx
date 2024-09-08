@@ -28,6 +28,8 @@ const initialAuthState = {
   identity: null,
   principal: null,
   marketplaceActor: null,
+  role: "",
+  admin: ""
 };
 
 export const defaultOptions = {
@@ -58,6 +60,8 @@ const reducer = (state, action) => {
         marketplaceActor,
         authClient,
         isInitialised,
+        role,
+        admin
       } = action.payload;
 
       return {
@@ -68,6 +72,8 @@ const reducer = (state, action) => {
         marketplaceActor,
         authClient,
         isInitialised,
+        role,
+        admin
       };
     }
     default: {
@@ -82,6 +88,7 @@ const AuthContext = createContext({
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   updateClient: () => Promise.resolve(),
+  setAdminFirstTime: () => Promise.resolve()
 });
 
 export const AuthProvider = ({ children }) => {
@@ -96,6 +103,26 @@ export const AuthProvider = ({ children }) => {
         identity,
       },
     });
+    // Get current admin
+    const currentAdmin = await actor.getAdmin();
+    let admin = "";
+    if(currentAdmin.length != 0) {
+
+      admin = currentAdmin[0].toText();
+    }
+
+    let role = ""
+    try {
+      const roleResult = await actor.getUserRole();
+      if ('ok' in roleResult) {
+        const AnsArr = Object.keys(roleResult.ok)
+        role = AnsArr[0];
+      } else {
+        console.error("Error getting user role:", roleResult.err);
+      }
+    } catch (error) {
+      console.error("Error calling getUserRole:", error);
+    }
 
     dispatch({
       type: "INITIALISE",
@@ -106,6 +133,8 @@ export const AuthProvider = ({ children }) => {
         marketplaceActor: actor,
         authClient: client,
         isInitialised: true,
+        role: role,
+        admin
       },
     });
   }
@@ -124,6 +153,24 @@ export const AuthProvider = ({ children }) => {
     });
   }
 
+  async function setAdminFirstTime() {
+
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.setInitialAdmin();
+      if ('ok' in result) {
+        console.log("You are now set as the admin!");
+      } else {
+        console.log(`Failed to set admin: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error setting admin:", error);
+    }
+    await updateClient(state.authClient);
+  }
+
   useEffect(() => {
     // Initialize AuthClient
     AuthClient.create(defaultOptions.createOptions).then(async (client) => {
@@ -139,6 +186,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateClient,
+        setAdminFirstTime,
       }}
     >
       {children}

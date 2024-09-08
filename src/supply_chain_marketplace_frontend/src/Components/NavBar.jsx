@@ -14,7 +14,8 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import Sitemark from "./SitemarkIcon";
 import { useAuth } from "../Context/useAuthClient";
 import { useNavigate } from "react-router-dom";
-import Link from "@mui/material/Link";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: "flex",
@@ -32,7 +33,7 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 
 export default function AppAppBar() {
   const [open, setOpen] = React.useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, role } = useAuth();
   const navigate = useNavigate();
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -59,10 +60,20 @@ export default function AppAppBar() {
           >
             <Sitemark />
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
-              <Button variant="text" color="info" size="small">
+              <Button
+                variant="text"
+                color="info"
+                size="small"
+                onClick={() => navigate("/")}
+              >
                 Home
               </Button>
-              <Button variant="text" color="info" size="small">
+              <Button
+                variant="text"
+                color="info"
+                size="small"
+                onClick={() => navigate("/dashboard")}
+              >
                 Dashboard
               </Button>
             </Box>
@@ -75,14 +86,17 @@ export default function AppAppBar() {
             }}
           >
             {isAuthenticated ? (
-              <Button
-                color="primary"
-                variant="contained"
-                size="small"
-                onClick={logout}
-              >
-                Logout
-              </Button>
+              <Stack direction="row" spacing={1} alignItems={"center"}>
+                <Chip color="primary" label={`Role - ${role}`} />
+                <Button
+                  color="primary"
+                  variant="contained"
+                  size="small"
+                  onClick={logout}
+                >
+                  Logout
+                </Button>
+              </Stack>
             ) : (
               <>
                 <Button
@@ -114,23 +128,26 @@ export default function AppAppBar() {
                   </IconButton>
                 </Box>
                 <Divider sx={{ my: 3 }} />
-                <MenuItem>Features</MenuItem>
-                <MenuItem>Testimonials</MenuItem>
-                <MenuItem>Highlights</MenuItem>
-                <MenuItem>Pricing</MenuItem>
-                <MenuItem>FAQ</MenuItem>
-                <MenuItem>Blog</MenuItem>
+                <MenuItem onClick={() => navigate("/")}>Home</MenuItem>
+                <MenuItem onClick={() => navigate("/dashboard")}>
+                  Dashboard
+                </MenuItem>
                 {isAuthenticated ? (
-                  <MenuItem>
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      fullWidth
-                      onClick={logout}
-                    >
-                      Logout
-                    </Button>
-                  </MenuItem>
+                  <>
+                    <MenuItem>
+                      <Chip color="primary" label={`Role - ${role}`} />
+                    </MenuItem>
+                    <MenuItem>
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        fullWidth
+                        onClick={logout}
+                      >
+                        Logout
+                      </Button>
+                    </MenuItem>
+                  </>
                 ) : (
                   <>
                     <MenuItem>

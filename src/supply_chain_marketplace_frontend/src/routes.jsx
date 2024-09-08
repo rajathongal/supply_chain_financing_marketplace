@@ -7,12 +7,14 @@ import Layout from "./Components/Layout";
 import NoGuard from "./Guards/NoGuard";
 import GuestGuard from "./Guards/GuestGuard";
 import HomeGuard from "./Guards/HomeGuard";
+import AdminGuard from "./Guards/AdminGuard";
 import Box from "@mui/material/Box";
 
 // pages Imports
 const Home = lazy(() => import("./Pages/Home"));
 const Dashboard = lazy(() => import("./Pages/Dashboard"));
 const SignIn = lazy(() => import("./Pages/SignIn"));
+const SetAdmin = lazy(() => import("./Pages/SetAdmin"));
 
 const RenderRoutes = () => (
   <Routes>
@@ -77,6 +79,12 @@ const routes = [
     path: "/signin",
     component: SignIn,
     title: "Signin",
+  },
+  {
+    guard: AdminGuard,
+    path: "/setadmin",
+    component: SetAdmin,
+    title: "SetAdmin",
   },
 ];
 

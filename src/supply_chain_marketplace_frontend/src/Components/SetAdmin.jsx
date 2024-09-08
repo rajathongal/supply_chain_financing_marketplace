@@ -8,6 +8,7 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import SitemarkIcon from "./SitemarkIcon";
 import { useAuth } from "../Context/useAuthClient";
+import { useNavigate } from "react-router-dom";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -28,7 +29,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   }),
 }));
 
-const SignInContainer = styled(Stack)(({ theme }) => ({
+const SetAdminContainer = styled(Stack)(({ theme }) => ({
   height: "100%",
   padding: 20,
   paddingTop: "40vh",
@@ -41,44 +42,55 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   }),
 }));
 
-export default function SignIn() {
-  const { login } = useAuth();
-  const handleSubmit = (event) => {
-    event.preventDefault();
-  };
+
+const SetAdmin = () => {
+  const { admin, setAdminFirstTime } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSetAdmin = async(e) => {
+    e.preventDefault();
+    await setAdminFirstTime();
+  }
+
+  React.useEffect(() => {
+    if(admin) {
+      navigate('/');
+    }
+  }, [admin])
 
   return (
-    <SignInContainer direction="column" justifyContent="space-between">
-      <Card variant="outlined">
-        <SitemarkIcon />
-        <Typography
-          component="h1"
-          variant="h4"
-          sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-        >
-          Sign in or Sign up
-        </Typography>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          noValidate
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            gap: 2,
-          }}
-        >
-          <Divider></Divider>
+    <SetAdminContainer direction="column" justifyContent="space-between">
+    <Card variant="outlined">
+      <SitemarkIcon />
+      <Typography
+        component="h1"
+        variant="h4"
+        sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+      >
+        Set Admin
+      </Typography>
+      <Box
+        component="form"
+        noValidate
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          gap: 2,
+        }}
+      >
+        <Divider></Divider>
 
-          <Button type="submit" fullWidth variant="contained" onClick={login}>
-            Proceed
-          </Button>
-          <Typography sx={{ textAlign: "center" }}>
-            Don&apos;t have an account?{" "} Click Proceed
-          </Typography>
-        </Box>
-      </Card>
-    </SignInContainer>
-  );
+        <Button type="submit" fullWidth variant="contained" onClick={handleSetAdmin}>
+          Proceed
+        </Button>
+        <Typography sx={{ textAlign: "center" }}>
+          Click Proceed to set you as admin
+        </Typography>
+      </Box>
+    </Card>
+  </SetAdminContainer>
+  )
 }
+
+export default SetAdmin
