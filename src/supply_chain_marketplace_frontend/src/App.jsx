@@ -12,16 +12,16 @@ import { AuthProvider } from "./Context/useAuthClient";
 
 function App() {
   return (
-    <HelmetProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <HelmetProvider>
         <Router>
           <ThemeProvider theme={Theme}>
             <CssBaseline enableColorScheme />
             <RenderRoutes />
           </ThemeProvider>
         </Router>
-      </AuthProvider>
-    </HelmetProvider>
+      </HelmetProvider>
+    </AuthProvider>
   );
 }
 

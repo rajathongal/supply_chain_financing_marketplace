@@ -1,5 +1,9 @@
 {
   "canisters": {
+    "internet-identity": {
+      "type": "pull",
+      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+    },
     "supply_chain_marketplace_backend": {
       "main": "src/supply_chain_marketplace_backend/main.mo",
       "type": "motoko"

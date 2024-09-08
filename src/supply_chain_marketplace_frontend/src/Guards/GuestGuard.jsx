@@ -5,7 +5,6 @@ import { useAuth } from "../Context/useAuthClient";
 const GuestGuard = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
-
   if (isAuthenticated) {
     return <>{children}</>;
   } else {

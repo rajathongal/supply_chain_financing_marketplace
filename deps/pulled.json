@@ -1,0 +1,13 @@
+{
+  "canisters": {
+    "rdmx6-jaaaa-aaaaa-aaadq-cai": {
+      "name": "internet-identity",
+      "wasm_hash": "5b40d36e886f57d033850cae79040bbccc7ffc884163cf7298b40528ebd071e4",
+      "wasm_hash_download": "5b40d36e886f57d033850cae79040bbccc7ffc884163cf7298b40528ebd071e4",
+      "init_guide": "Use '(null)' for sensible defaults. See the candid interface for more details.",
+      "init_arg": null,
+      "candid_args": "(opt InternetIdentityInit)",
+      "gzip": true
+    }
+  }
+}

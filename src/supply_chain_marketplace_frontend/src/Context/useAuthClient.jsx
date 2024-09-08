@@ -1,6 +1,6 @@
 import { AuthClient } from "@dfinity/auth-client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-// import { canisterId, createActor } from "../../declarations/whoami";
+import { canisterId, createActor } from "../../../declarations/supply_chain_marketplace_backend";
 
 const AuthContext = createContext();
 
@@ -12,9 +12,9 @@ export const getIdentityProvider = () => {
     // Safari does not support localhost subdomains
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     if (isLocal && isSafari) {
-      idpProvider = `http://localhost:${process.env.REACT_APP_LOCAL_ICP_PORT}/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
+      idpProvider = `http://localhost:${process.env.CANISTER_LOCAL_ICP_PORT}/?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`;
     } else if (isLocal) {
-      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:${process.env.REACT_APP_LOCAL_ICP_PORT}`;
+      idpProvider = `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:${process.env.CANISTER_LOCAL_ICP_PORT}`;
     }
   }
   return idpProvider;
@@ -50,7 +50,7 @@ export const useAuthClient = (options = defaultOptions) => {
   const [authClient, setAuthClient] = useState(null);
   const [identity, setIdentity] = useState(null);
   const [principal, setPrincipal] = useState(null);
-  // const [whoamiActor, setWhoamiActor] = useState(null);
+  const [marketplaceActor, setMarketplaceActor] = useState(null);
 
   useEffect(() => {
     // Initialize AuthClient
@@ -80,13 +80,13 @@ export const useAuthClient = (options = defaultOptions) => {
 
     setAuthClient(client);
 
-    // const actor = createActor(canisterId, {
-    //   agentOptions: {
-    //     identity,
-    //   },
-    // });
+    const actor = createActor(canisterId, {
+      agentOptions: {
+        identity,
+      },
+    });
 
-    // setWhoamiActor(actor);
+    setMarketplaceActor(actor);
   }
 
   async function logout() {
@@ -101,7 +101,7 @@ export const useAuthClient = (options = defaultOptions) => {
     authClient,
     identity,
     principal,
-    // whoamiActor,
+    marketplaceActor,
   };
 };
 /**

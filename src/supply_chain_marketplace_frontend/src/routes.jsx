@@ -6,10 +6,13 @@ import ErrorBoundary from "./Utils/ErrorBoundary";
 import Layout from "./Components/Layout";
 import NoGuard from "./Guards/NoGuard";
 import GuestGuard from "./Guards/GuestGuard";
+import Box from "@mui/material/Box";
 
 // pages Imports
 const Home = lazy(() => import("./Pages/Home"));
 const Dashboard = lazy(() => import("./Pages/Dashboard"));
+const SignIn = lazy(() => import("./Pages/SignIn"));
+const SignUp = lazy(() => import("./Pages/SignUp"));
 
 const RenderRoutes = () => (
   <Routes>
@@ -22,24 +25,32 @@ const RenderRoutes = () => (
           path={route.path}
           element={
             <>
-              <ErrorBoundary>
-                <Guard>
+              <Box
+                sx={{
+                  height: "100dvh",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <ErrorBoundary>
                   <Helmet>
                     <title>{`${
                       pageTitle && `${pageTitle} - `
                     }SupplyHub`}</title>
                   </Helmet>
-                  <Layout>
-                    <Suspense fallback={<Loading />}>
-                      {route.routes ? (
-                        renderRoutes(route.routes)
-                      ) : (
-                        <route.component />
-                      )}
-                    </Suspense>
-                  </Layout>
-                </Guard>
-              </ErrorBoundary>
+                  <Guard>
+                    <Layout>
+                      <Suspense fallback={<Loading />}>
+                        {route.routes ? (
+                          renderRoutes(route.routes)
+                        ) : (
+                          <route.component />
+                        )}
+                      </Suspense>
+                    </Layout>
+                  </Guard>
+                </ErrorBoundary>
+              </Box>
             </>
           }
         />
@@ -60,7 +71,19 @@ const routes = [
     path: "/dashboard",
     component: Dashboard,
     title: "Dashboard",
-  }
+  },
+  {
+    guard: NoGuard,
+    path: "/signin",
+    component: SignIn,
+    title: "Signin",
+  },
+  {
+    guard: NoGuard,
+    path: "/signup",
+    component: SignUp,
+    title: "Signup",
+  },
 ];
 
 export default RenderRoutes;
