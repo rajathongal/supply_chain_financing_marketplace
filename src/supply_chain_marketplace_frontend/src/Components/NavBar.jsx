@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { styled, alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
@@ -13,6 +13,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import Sitemark from "./SitemarkIcon";
 import { useAuth } from "../Context/useAuthClient";
+import { useNavigate } from "react-router-dom";
+import Link from "@mui/material/Link";
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   display: "flex",
@@ -31,9 +33,13 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
 export default function AppAppBar() {
   const [open, setOpen] = React.useState(false);
   const { isAuthenticated, logout } = useAuth();
-
+  const navigate = useNavigate();
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
+  };
+
+  const onSignIn = () => {
+    return navigate("/signin");
   };
 
   return (
@@ -54,32 +60,10 @@ export default function AppAppBar() {
             <Sitemark />
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
               <Button variant="text" color="info" size="small">
-                Features
+                Home
               </Button>
               <Button variant="text" color="info" size="small">
-                Testimonials
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Highlights
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Pricing
-              </Button>
-              <Button
-                variant="text"
-                color="info"
-                size="small"
-                sx={{ minWidth: 0 }}
-              >
-                FAQ
-              </Button>
-              <Button
-                variant="text"
-                color="info"
-                size="small"
-                sx={{ minWidth: 0 }}
-              >
-                Blog
+                Dashboard
               </Button>
             </Box>
           </Box>
@@ -91,16 +75,23 @@ export default function AppAppBar() {
             }}
           >
             {isAuthenticated ? (
-              <Button color="primary" variant="text" size="small" onClick={logout}>
+              <Button
+                color="primary"
+                variant="contained"
+                size="small"
+                onClick={logout}
+              >
                 Logout
               </Button>
             ) : (
               <>
-                <Button color="primary" variant="text" size="small" >
+                <Button
+                  color="primary"
+                  variant="contained"
+                  size="small"
+                  onClick={onSignIn}
+                >
                   Sign in
-                </Button>
-                <Button color="primary" variant="contained" size="small">
-                  Sign up
                 </Button>
               </>
             )}
@@ -129,16 +120,31 @@ export default function AppAppBar() {
                 <MenuItem>Pricing</MenuItem>
                 <MenuItem>FAQ</MenuItem>
                 <MenuItem>Blog</MenuItem>
-                <MenuItem>
-                  <Button color="primary" variant="contained" fullWidth>
-                    Sign up
-                  </Button>
-                </MenuItem>
-                <MenuItem>
-                  <Button color="primary" variant="outlined" fullWidth>
-                    Sign in
-                  </Button>
-                </MenuItem>
+                {isAuthenticated ? (
+                  <MenuItem>
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      fullWidth
+                      onClick={logout}
+                    >
+                      Logout
+                    </Button>
+                  </MenuItem>
+                ) : (
+                  <>
+                    <MenuItem>
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        fullWidth
+                        onClick={onSignIn}
+                      >
+                        Sign in
+                      </Button>
+                    </MenuItem>
+                  </>
+                )}
               </Box>
             </Drawer>
           </Box>

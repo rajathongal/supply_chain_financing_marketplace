@@ -57,7 +57,7 @@ export default function SignIn() {
           variant="h4"
           sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
         >
-          Sign in
+          Sign in or Sign up
         </Typography>
         <Box
           component="form"
@@ -73,15 +73,10 @@ export default function SignIn() {
           <Divider></Divider>
 
           <Button type="submit" fullWidth variant="contained" onClick={login}>
-            Sign in
+            Proceed
           </Button>
           <Typography sx={{ textAlign: "center" }}>
-            Don&apos;t have an account?{" "}
-            <span>
-              <Link href="/signup" variant="body2" sx={{ alignSelf: "center" }}>
-                Sign up
-              </Link>
-            </span>
+            Don&apos;t have an account?{" "} Click Proceed
           </Typography>
         </Box>
       </Card>

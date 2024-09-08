@@ -6,13 +6,13 @@ import ErrorBoundary from "./Utils/ErrorBoundary";
 import Layout from "./Components/Layout";
 import NoGuard from "./Guards/NoGuard";
 import GuestGuard from "./Guards/GuestGuard";
+import HomeGuard from "./Guards/HomeGuard";
 import Box from "@mui/material/Box";
 
 // pages Imports
 const Home = lazy(() => import("./Pages/Home"));
 const Dashboard = lazy(() => import("./Pages/Dashboard"));
 const SignIn = lazy(() => import("./Pages/SignIn"));
-const SignUp = lazy(() => import("./Pages/SignUp"));
 
 const RenderRoutes = () => (
   <Routes>
@@ -61,7 +61,7 @@ const RenderRoutes = () => (
 
 const routes = [
   {
-    guard: NoGuard,
+    guard: HomeGuard,
     path: "/",
     component: Home,
     title: "Home",
@@ -77,12 +77,6 @@ const routes = [
     path: "/signin",
     component: SignIn,
     title: "Signin",
-  },
-  {
-    guard: NoGuard,
-    path: "/signup",
-    component: SignUp,
-    title: "Signup",
   },
 ];
 

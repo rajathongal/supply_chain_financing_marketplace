@@ -8,7 +8,7 @@ import Theme from "./Utils/BaseTheme";
 import RenderRoutes from "./routes";
 import { BrowserRouter as Router } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
-import { AuthProvider } from "./Context/useAuthClient";
+import { AuthProvider } from "./Context/AuthContext";
 
 function App() {
   return (
