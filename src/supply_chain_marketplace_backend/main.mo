@@ -154,6 +154,9 @@ actor SupplyChainMarketplace {
 
     // Fund an invoice
     public shared (msg) func fundInvoice(invoiceId : Nat) : async Result.Result<(), Text> {
+        if (not hasRole(msg.caller, #Investor)) {
+            return #err("Only invest can fund invoices");
+        };
         switch (invoices.get(invoiceId)) {
             case (?invoice) {
                 if (invoice.isFunded) {

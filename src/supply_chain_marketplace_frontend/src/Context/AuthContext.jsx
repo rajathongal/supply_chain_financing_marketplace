@@ -88,11 +88,20 @@ const AuthContext = createContext({
   login: () => Promise.resolve(),
   logout: () => Promise.resolve(),
   updateClient: () => Promise.resolve(),
-  setAdminFirstTime: () => Promise.resolve()
+  setAdminFirstTime: () => Promise.resolve(),
+  registerUserRole: () => Promise.resolve(),
 });
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialAuthState);
+
+  useEffect(() => {
+    // Initialize AuthClient
+    AuthClient.create(defaultOptions.createOptions).then(async (client) => {
+      console.log(client)
+      updateClient(client);
+    });
+  }, []);
 
   async function updateClient(client) {
     const isAuthenticated = await client.isAuthenticated();
@@ -103,6 +112,7 @@ export const AuthProvider = ({ children }) => {
         identity,
       },
     });
+
     // Get current admin
     const currentAdmin = await actor.getAdmin();
     let admin = "";
@@ -171,12 +181,24 @@ export const AuthProvider = ({ children }) => {
     await updateClient(state.authClient);
   }
 
-  useEffect(() => {
-    // Initialize AuthClient
-    AuthClient.create(defaultOptions.createOptions).then(async (client) => {
-      updateClient(client);
-    });
-  }, []);
+  async function registerUserRole(role) {
+    console.log("Hit")
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.registerUser(role);
+      console.log(result)
+      if (result.ok) {
+        console.log('User registered successfully!');
+      } else {
+        console.log(`Registration failed: ${result.err}`);
+      }
+    } catch (error) {
+      console.error('Error registering user:', error);
+    }
+    await updateClient(state.authClient);
+  }
 
   return (
     <AuthContext.Provider
@@ -187,6 +209,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateClient,
         setAdminFirstTime,
+        registerUserRole
       }}
     >
       {children}

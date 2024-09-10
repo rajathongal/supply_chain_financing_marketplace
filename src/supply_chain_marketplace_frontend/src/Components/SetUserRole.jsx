@@ -42,12 +42,16 @@ const SetUserRoleContainer = styled(Stack)(({ theme }) => ({
 }));
 
 const SetUserRole = () => {
-  const { role } = useAuth();
+  const { role, registerUserRole } = useAuth();
   const navigate = useNavigate();
 
-  const handleSetAdmin = async (e) => {
-    e.preventDefault();
-  };
+  const registerAsInvestor = async() => {
+    await registerUserRole({Investor: null})
+  }
+
+  const registerAsSupplier = async() => {
+    await registerUserRole({Supplier: null})
+  }
 
   React.useEffect(() => {
     if (role) {
@@ -56,7 +60,7 @@ const SetUserRole = () => {
   }, [role]);
 
   return (
-    <SetUserRoleContainer direction="column" justifyContent="space-between" width={"200vh"}>
+    <SetUserRoleContainer direction="column" justifyContent="space-between" width={{xs: "40vh", md: "50vh"}}>
       <Card variant="outlined">
         <SitemarkIcon />
         <Typography
@@ -85,17 +89,17 @@ const SetUserRole = () => {
             type="submit"
             fullWidth
             variant="contained"
-            onClick={handleSetAdmin}
+            onClick={() => registerAsSupplier()}
           >
-            Proceed
+            As Supplier
           </Button>
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            onClick={handleSetAdmin}
+            onClick={() => registerAsInvestor()}
           >
-            Proceed
+            As Investor
           </Button>
         </Box>
         <Typography sx={{ textAlign: "center" }}>
