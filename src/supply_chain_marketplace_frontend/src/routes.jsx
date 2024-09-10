@@ -2,19 +2,21 @@ import React, { Suspense, Fragment, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Loading from "./Components/Loading";
+import Box from "@mui/material/Box";
 import ErrorBoundary from "./Utils/ErrorBoundary";
 import Layout from "./Components/Layout";
 import NoGuard from "./Guards/NoGuard";
 import GuestGuard from "./Guards/GuestGuard";
 import HomeGuard from "./Guards/HomeGuard";
 import AdminGuard from "./Guards/AdminGuard";
-import Box from "@mui/material/Box";
+import UserRoleGuard from "./Guards/UserRoleGuard";
 
 // pages Imports
 const Home = lazy(() => import("./Pages/Home"));
 const Dashboard = lazy(() => import("./Pages/Dashboard"));
 const SignIn = lazy(() => import("./Pages/SignIn"));
 const SetAdmin = lazy(() => import("./Pages/SetAdmin"));
+const SetUserRole = lazy(() => import("./Pages/SetUserRole"));
 
 const RenderRoutes = () => (
   <Routes>
@@ -86,6 +88,12 @@ const routes = [
     component: SetAdmin,
     title: "SetAdmin",
   },
+  {
+    guard: UserRoleGuard,
+    path: "/setuserrole",
+    component: SetUserRole,
+    title: "SetUserRole",
+  }
 ];
 
 export default RenderRoutes;

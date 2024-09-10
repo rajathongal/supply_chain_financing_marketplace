@@ -3,20 +3,20 @@ import PropTypes from "prop-types";
 import { useAuth } from "../Context/useAuthClient";
 import { Navigate } from "react-router-dom";
 
-const AdminGuard = ({ children }) => {
-  const { isAuthenticated, admin } = useAuth();
+const UserRoleGuard = ({ children }) => {
+  const { isAuthenticated, admin, role } = useAuth();
 
-  if (isAuthenticated && !admin) {
+  if (isAuthenticated && admin && !role) {
     return <>{children}</>;
-  } else if (isAuthenticated && admin) {
+  } else if (isAuthenticated && admin && role) {
     return <Navigate to="/dashboard" />;
   } else {
     return <Navigate to="/signin" />;
   }
 };
 
-AdminGuard.propTypes = {
+UserRoleGuard.propTypes = {
   children: PropTypes.node,
 };
 
-export default AdminGuard;
+export default UserRoleGuard;
