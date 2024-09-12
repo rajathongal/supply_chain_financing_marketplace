@@ -33,6 +33,7 @@ actor SupplyChainMarketplace {
         id : Nat;
         buyerPrincipal : Principal;
         supplierPrincipal : Principal;
+        description: Text;
         amount : Nat;
         dueDate : Nat;
         status : { #Created; #Invoiced; #Paid };
@@ -48,6 +49,13 @@ actor SupplyChainMarketplace {
         buyer : Principal;
         isFunded : Bool;
         status : { #Created; #Funded; #Paid };
+    };
+
+    type SupplierProfile = {
+        principal : Principal;
+        name : Text;
+        description : Text;
+        categories : [Text];
     };
 
     // Investment type definition
@@ -80,6 +88,31 @@ actor SupplyChainMarketplace {
     private var adminPrincipal : ?Principal = null;
     private var buyers = HashMap.HashMap<Principal, Buyer>(10, Principal.equal, Principal.hash);
     private var purchaseOrders = HashMap.HashMap<Nat, PurchaseOrder>(10, Nat.equal, natHash);
+    private var supplierProfiles = HashMap.HashMap<Principal, SupplierProfile>(10, Principal.equal, Principal.hash);
+
+    public shared(msg) func registerSupplierProfile(name: Text, description: Text, categories: [Text]) : async Result.Result<(), Text> {
+        if (not hasRole(msg.caller, #Supplier)) {
+            return #err("Only suppliers can register a profile");
+        };
+        let profile : SupplierProfile = {
+            principal = msg.caller;
+            name = name;
+            description = description;
+            categories = categories;
+        };
+        supplierProfiles.put(msg.caller, profile);
+        #ok()
+    };
+
+    public query func getSupplierProfiles() : async [SupplierProfile] {
+        Iter.toArray(supplierProfiles.vals())
+    };
+
+    public query func searchSuppliers(category: Text) : async [SupplierProfile] {
+        Iter.toArray(Iter.filter(supplierProfiles.vals(), func (profile: SupplierProfile) : Bool {
+            Array.find<Text>(profile.categories, func (c: Text) : Bool { c == category }) != null
+        }))
+    };
 
     // Function to set the initial admin
     public shared (msg) func setInitialAdmin() : async Result.Result<(), Text> {
@@ -152,22 +185,29 @@ actor SupplyChainMarketplace {
     };
 
     // Create Purchase order
-    public shared (msg) func createPurchaseOrder(supplierPrincipal : Principal, amount : Nat, dueDate : Nat) : async Result.Result<Nat, Text> {
+    public shared (msg) func createPurchaseOrder(supplierPrincipal : Principal, amount : Nat, dueDate : Nat, description: Text) : async Result.Result<Nat, Text> {
         if (not hasRole(msg.caller, #Buyer)) {
             return #err("Only buyers can create purchase orders");
         };
-        let id = nextPurchaseOrderId;
-        nextPurchaseOrderId += 1;
-        let po : PurchaseOrder = {
-            id = id;
-            buyerPrincipal = msg.caller;
-            supplierPrincipal = supplierPrincipal;
-            amount = amount;
-            dueDate = dueDate;
-            status = #Created;
-        };
-        purchaseOrders.put(id, po);
-        #ok(id);
+
+        switch (supplierProfiles.get(supplierPrincipal)) {
+            case (null) { #err("Supplier not found") };
+            case (?_) {
+                let id = nextPurchaseOrderId;
+                nextPurchaseOrderId += 1;
+                let po : PurchaseOrder = {
+                    id = id;
+                    buyerPrincipal = msg.caller;
+                    supplierPrincipal = supplierPrincipal;
+                    amount = amount;
+                    dueDate = dueDate;
+                    description = description;
+                    status = #Created;
+                };
+                purchaseOrders.put(id, po);
+                #ok(id)
+            };
+        }
     };
 
     // Create a new invoice
@@ -251,10 +291,10 @@ actor SupplyChainMarketplace {
                             expectedReturn = invoice.amount;
                         };
                         investments.add(investment);
-                        invoices.put(invoiceId, {invoice with status = #Funded});
-                        #ok()
+                        invoices.put(invoiceId, { invoice with status = #Funded });
+                        #ok();
                     };
-                }
+                };
             };
         };
     };
@@ -275,16 +315,16 @@ actor SupplyChainMarketplace {
                 switch (transferResult) {
                     case (#err(e)) { return #err(e) };
                     case (#ok()) {
-                        invoices.put(invoiceId, {invoice with status = #Paid});
+                        invoices.put(invoiceId, { invoice with status = #Paid });
                         // Transfer funds to the investor
                         for (investment in investments.vals()) {
                             if (investment.invoiceId == invoiceId) {
                                 ignore transferTokens(invoice.supplier, investment.investor, investment.expectedReturn);
                             };
                         };
-                        #ok()
+                        #ok();
                     };
-                }
+                };
             };
         };
     };
@@ -340,11 +380,11 @@ actor SupplyChainMarketplace {
         tokenBalances.put(msg.caller, currentBalance + amount);
         #ok();
     };
-    public query func getTokenBalance(user: Principal) : async Nat {
-        Option.get(tokenBalances.get(user), 0)
+    public query func getTokenBalance(user : Principal) : async Nat {
+        Option.get(tokenBalances.get(user), 0);
     };
 
-    private func transferTokens(from: Principal, to: Principal, amount: Nat) : Result.Result<(), Text> {
+    private func transferTokens(from : Principal, to : Principal, amount : Nat) : Result.Result<(), Text> {
         let fromBalance = Option.get(tokenBalances.get(from), 0);
         if (fromBalance < amount) {
             return #err("Insufficient balance");
@@ -352,6 +392,6 @@ actor SupplyChainMarketplace {
         let toBalance = Option.get(tokenBalances.get(to), 0);
         tokenBalances.put(from, fromBalance - amount);
         tokenBalances.put(to, toBalance + amount);
-        #ok()
+        #ok();
     };
 };
