@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "setup": "npm i && dfx canister create supply_chain_marketplace_backend && dfx generate supply_chain_marketplace_backend && dfx deploy",
+    "setup": "npm i && dfx canister create supply_chain_marketplace_backend && dfx generate supply_chain_marketplace_backend && dfx deps pull && dfx deps init --argument '(null)' internet-identity && dfx deps deploy && dfx deploy",
     "start": "vite --port 3000",
     "prebuild": "dfx generate",
     "build": "tsc && vite build",

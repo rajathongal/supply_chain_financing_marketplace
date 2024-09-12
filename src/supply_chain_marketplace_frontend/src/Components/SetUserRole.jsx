@@ -46,11 +46,11 @@ const SetUserRole = () => {
   const navigate = useNavigate();
 
   const registerAsInvestor = async() => {
-    await registerUserRole({Investor: null})
+     await registerUserRole({Investor: null})
   }
 
   const registerAsSupplier = async() => {
-    await registerUserRole({Supplier: null})
+     await registerUserRole({Supplier: null})
   }
 
   React.useEffect(() => {
@@ -86,18 +86,16 @@ const SetUserRole = () => {
         >
 
           <Button
-            type="submit"
             fullWidth
             variant="contained"
-            onClick={() => registerAsSupplier()}
+            onClick={registerAsSupplier}
           >
             As Supplier
           </Button>
           <Button
-            type="submit"
             fullWidth
             variant="contained"
-            onClick={() => registerAsInvestor()}
+            onClick={registerAsInvestor}
           >
             As Investor
           </Button>

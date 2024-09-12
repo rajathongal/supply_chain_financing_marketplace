@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Initialize AuthClient
     AuthClient.create(defaultOptions.createOptions).then(async (client) => {
-      console.log(client)
+
       updateClient(client);
     });
   }, []);
@@ -155,6 +155,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   async function login() {
+
     state.authClient.login({
       ...defaultOptions.loginOptions,
       onSuccess: async () => {
@@ -182,14 +183,13 @@ export const AuthProvider = ({ children }) => {
   }
 
   async function registerUserRole(role) {
-    console.log("Hit")
+
     if (!state.marketplaceActor) {
       return;
     }
     try {
       const result = await state.marketplaceActor.registerUser(role);
-      console.log(result)
-      if (result.ok) {
+      if ('ok' in result) {
         console.log('User registered successfully!');
       } else {
         console.log(`Registration failed: ${result.err}`);

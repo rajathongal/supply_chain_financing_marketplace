@@ -17,7 +17,7 @@ const Layout = ({ children }) => {
         alignItems: "center",
       }}
     >
-      <Box w={"full"} marginBottom={"10vh"}>
+      <Box w={"full"} marginBottom={"20vh"}>
         <NavBar />
       </Box>
 
