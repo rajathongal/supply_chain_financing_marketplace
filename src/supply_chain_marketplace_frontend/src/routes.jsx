@@ -17,6 +17,7 @@ const Dashboard = lazy(() => import("./Pages/Dashboard"));
 const SignIn = lazy(() => import("./Pages/SignIn"));
 const SetAdmin = lazy(() => import("./Pages/SetAdmin"));
 const SetUserRole = lazy(() => import("./Pages/SetUserRole"));
+const Wallet = lazy(() => import("./Pages/Wallet"));
 
 const RenderRoutes = () => (
   <Routes>
@@ -93,6 +94,12 @@ const routes = [
     path: "/setuserrole",
     component: SetUserRole,
     title: "SetUserRole",
+  },
+  {
+    guard: GuestGuard,
+    path: "/wallet",
+    component: Wallet,
+    title: "Wallet"
   }
 ];
 

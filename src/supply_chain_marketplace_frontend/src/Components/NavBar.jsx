@@ -59,6 +59,7 @@ export default function AppAppBar() {
             sx={{ flexGrow: 1, display: "flex", alignItems: "center", px: 0 }}
           >
             <Sitemark />
+
             <Box sx={{ display: { xs: "none", md: "flex" } }}>
               <Button
                 variant="text"
@@ -75,6 +76,14 @@ export default function AppAppBar() {
                 onClick={() => navigate("/dashboard")}
               >
                 Dashboard
+              </Button>
+              <Button
+                variant="text"
+                color="info"
+                size="small"
+                onClick={() => navigate("/wallet")}
+              >
+                Wallet
               </Button>
             </Box>
           </Box>

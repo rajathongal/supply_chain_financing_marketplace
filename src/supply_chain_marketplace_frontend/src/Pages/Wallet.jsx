@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
-import SitemarkIcon from "./SitemarkIcon";
+import SitemarkIcon from "../Components/SitemarkIcon";
 import { useAuth } from "../Context/useAuthClient";
 import { useNavigate } from "react-router-dom";
 
@@ -41,7 +41,7 @@ const SetUserRoleContainer = styled(Stack)(({ theme }) => ({
   }),
 }));
 
-const SetUserRole = () => {
+const Wallet = () => {
   const { role, registerUserRole } = useAuth();
   const navigate = useNavigate();
 
@@ -56,12 +56,6 @@ const SetUserRole = () => {
   const registerAsBuyer = async() => {
     await registerUserRole({Buyer: null})
  }
-
-  React.useEffect(() => {
-    if (role) {
-      navigate("/dashboard");
-    }
-  }, [role]);
 
   return (
     <SetUserRoleContainer direction="column" justifyContent="space-between" width={{xs: "40vh", md: "50vh"}}>
@@ -119,4 +113,4 @@ const SetUserRole = () => {
   );
 };
 
-export default SetUserRole;
+export default Wallet;
