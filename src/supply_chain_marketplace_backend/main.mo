@@ -7,6 +7,7 @@ import Result "mo:base/Result";
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
 import Cycles "mo:base/ExperimentalCycles";
+import Option "mo:base/Option";
 
 actor SupplyChainMarketplace {
 
@@ -15,6 +16,7 @@ actor SupplyChainMarketplace {
         #Admin;
         #Supplier;
         #Investor;
+        #Buyer;
     };
 
     type User = {
@@ -22,14 +24,30 @@ actor SupplyChainMarketplace {
         role : Role;
     };
 
+    type Buyer = {
+        principal : Principal;
+        name : Text;
+    };
+
+    type PurchaseOrder = {
+        id : Nat;
+        buyerPrincipal : Principal;
+        supplierPrincipal : Principal;
+        amount : Nat;
+        dueDate : Nat;
+        status : { #Created; #Invoiced; #Paid };
+    };
+
     // Invoice type definition
     public type Invoice = {
         invoiceId : Nat;
+        purchaseOrderId : Nat;
         amount : Nat;
         dueDate : Nat;
         supplier : Principal;
         buyer : Principal;
         isFunded : Bool;
+        status : { #Created; #Funded; #Paid };
     };
 
     // Investment type definition
@@ -37,6 +55,7 @@ actor SupplyChainMarketplace {
         invoiceId : Nat;
         investor : Principal;
         amount : Nat;
+        expectedReturn : Nat;
     };
 
     // Caller to get Principal
@@ -54,11 +73,13 @@ actor SupplyChainMarketplace {
     };
 
     private var invoiceId : Nat = 0;
+    private var nextPurchaseOrderId : Nat = 1;
     private var invoices = HashMap.HashMap<Nat, Invoice>(10, Nat.equal, natHash);
     private var investments = Buffer.Buffer<Investment>(0);
-
     private var users = HashMap.HashMap<Principal, User>(10, Principal.equal, Principal.hash);
     private var adminPrincipal : ?Principal = null;
+    private var buyers = HashMap.HashMap<Principal, Buyer>(10, Principal.equal, Principal.hash);
+    private var purchaseOrders = HashMap.HashMap<Nat, PurchaseOrder>(10, Nat.equal, natHash);
 
     // Function to set the initial admin
     public shared (msg) func setInitialAdmin() : async Result.Result<(), Text> {
@@ -99,6 +120,14 @@ actor SupplyChainMarketplace {
         #ok();
     };
 
+    public shared (msg) func registerBuyer(name : Text) : async Result.Result<(), Text> {
+        if (not hasRole(msg.caller, #Buyer)) {
+            return #err("Only users with Buyer role can register as buyers");
+        };
+        buyers.put(msg.caller, { principal = msg.caller; name = name });
+        #ok();
+    };
+
     public shared (msg) func changeUserRole(userPrincipal : Principal, newRole : Role) : async Result.Result<(), Text> {
         if (not isAdmin(msg.caller)) {
             return #err("Only admin can change roles");
@@ -122,15 +151,58 @@ actor SupplyChainMarketplace {
         };
     };
 
+    // Create Purchase order
+    public shared (msg) func createPurchaseOrder(supplierPrincipal : Principal, amount : Nat, dueDate : Nat) : async Result.Result<Nat, Text> {
+        if (not hasRole(msg.caller, #Buyer)) {
+            return #err("Only buyers can create purchase orders");
+        };
+        let id = nextPurchaseOrderId;
+        nextPurchaseOrderId += 1;
+        let po : PurchaseOrder = {
+            id = id;
+            buyerPrincipal = msg.caller;
+            supplierPrincipal = supplierPrincipal;
+            amount = amount;
+            dueDate = dueDate;
+            status = #Created;
+        };
+        purchaseOrders.put(id, po);
+        #ok(id);
+    };
+
     // Create a new invoice
-    public shared (msg) func createInvoice(amount : Nat, dueDate : Nat, buyer : Principal) : async Result.Result<Nat, Text> {
+    public shared (msg) func createInvoice(purchaseOrderId : Nat) : async Result.Result<Nat, Text> {
         if (not hasRole(msg.caller, #Supplier)) {
             return #err("Only suppliers can create invoices");
         };
-        invoiceId += 1;
-        let supplier = msg.caller;
-        invoices.put(invoiceId, { invoiceId; amount; dueDate; supplier; buyer; isFunded = false });
-        #ok(invoiceId);
+        switch (purchaseOrders.get(purchaseOrderId)) {
+            case (null) {
+                #err("Purchase order not found");
+            };
+            case (?po) {
+                if (po.supplierPrincipal != msg.caller) {
+                    return #err("You are not the supplier for this purchase order");
+                };
+                if (po.status != #Created) {
+                    return #err("Purchase order is not in Created status");
+                };
+                let id = invoiceId;
+                invoiceId += 1;
+                let invoice : Invoice = {
+                    invoiceId = id;
+                    purchaseOrderId = purchaseOrderId;
+                    amount = po.amount;
+                    dueDate = po.dueDate;
+                    supplier = msg.caller;
+                    buyer = po.buyerPrincipal;
+                    status = #Created;
+                    isFunded = false;
+                };
+                invoices.put(id, invoice);
+                purchaseOrders.put(purchaseOrderId, { po with status = #Invoiced });
+                #ok(id);
+            };
+        };
     };
 
     // Get a specific invoice
@@ -139,11 +211,11 @@ actor SupplyChainMarketplace {
     };
 
     // List all invoices
-    public shared(msg) func getAllInvoices() :  async Result.Result<[Invoice], Text> {
+    public shared (msg) func getAllInvoices() : async Result.Result<[Invoice], Text> {
         if (not isAdmin(msg.caller)) {
             return #err("Only admin can view all users");
         };
-        #ok(Iter.toArray(Iter.map(invoices.entries(), func (entry: (Nat, Invoice)): Invoice { entry.1 })))
+        #ok(Iter.toArray(Iter.map(invoices.entries(), func(entry : (Nat, Invoice)) : Invoice { entry.1 })));
     };
 
     // List available (unfunded) invoices
@@ -153,36 +225,66 @@ actor SupplyChainMarketplace {
     };
 
     // Fund an invoice
-    public shared (msg) func fundInvoice(invoiceId : Nat) : async Result.Result<(), Text> {
+    public shared (msg) func fundInvoice(invoiceId : Nat, fundingAmount : Nat) : async Result.Result<(), Text> {
         if (not hasRole(msg.caller, #Investor)) {
-            return #err("Only invest can fund invoices");
+            return #err("Only investors can fund invoices");
         };
         switch (invoices.get(invoiceId)) {
-            case (?invoice) {
-                if (invoice.isFunded) {
-                    return #err("Invoice is already funded");
-                };
-
-                let updatedInvoice = {
-                    invoiceId = invoice.invoiceId;
-                    amount = invoice.amount;
-                    dueDate = invoice.dueDate;
-                    supplier = invoice.supplier;
-                    buyer = invoice.buyer;
-                    isFunded = true;
-                };
-                invoices.put(invoiceId, updatedInvoice);
-
-                investments.add({
-                    invoiceId = invoiceId;
-                    investor = msg.caller;
-                    amount = invoice.amount;
-                });
-
-                #ok();
-            };
             case (null) {
                 #err("Invoice not found");
+            };
+            case (?invoice) {
+                if (invoice.status != #Created) {
+                    return #err("Invoice is not available for funding");
+                };
+                if (fundingAmount > invoice.amount) {
+                    return #err("Funding amount cannot be greater than invoice amount");
+                };
+                let transferResult = transferTokens(msg.caller, invoice.supplier, fundingAmount);
+                switch (transferResult) {
+                    case (#err(e)) { return #err(e) };
+                    case (#ok()) {
+                        let investment : Investment = {
+                            invoiceId = invoiceId;
+                            investor = msg.caller;
+                            amount = fundingAmount;
+                            expectedReturn = invoice.amount;
+                        };
+                        investments.add(investment);
+                        invoices.put(invoiceId, {invoice with status = #Funded});
+                        #ok()
+                    };
+                }
+            };
+        };
+    };
+
+    public shared (msg) func payInvoice(invoiceId : Nat) : async Result.Result<(), Text> {
+        switch (invoices.get(invoiceId)) {
+            case (null) {
+                #err("Invoice not found");
+            };
+            case (?invoice) {
+                if (invoice.buyer != msg.caller) {
+                    return #err("Only the buyer can pay this invoice");
+                };
+                if (invoice.status != #Funded) {
+                    return #err("Invoice is not funded");
+                };
+                let transferResult = transferTokens(msg.caller, invoice.supplier, invoice.amount);
+                switch (transferResult) {
+                    case (#err(e)) { return #err(e) };
+                    case (#ok()) {
+                        invoices.put(invoiceId, {invoice with status = #Paid});
+                        // Transfer funds to the investor
+                        for (investment in investments.vals()) {
+                            if (investment.invoiceId == invoiceId) {
+                                ignore transferTokens(invoice.supplier, investment.investor, investment.expectedReturn);
+                            };
+                        };
+                        #ok()
+                    };
+                }
             };
         };
     };
@@ -190,6 +292,14 @@ actor SupplyChainMarketplace {
     // Get investment details for an investor
     public query func getInvestmentDetails(investor : Principal) : async [Investment] {
         Array.filter(Buffer.toArray(investments), func(i : Investment) : Bool { i.investor == investor });
+    };
+
+    public query func getBuyers() : async [Buyer] {
+        Iter.toArray(buyers.vals());
+    };
+
+    public query func getPurchaseOrders(supplierPrincipal : Principal) : async [PurchaseOrder] {
+        Iter.toArray(Iter.filter(purchaseOrders.vals(), func(po : PurchaseOrder) : Bool { po.supplierPrincipal == supplierPrincipal }));
     };
 
     // Accept cycles (ICP tokens)
@@ -200,27 +310,48 @@ actor SupplyChainMarketplace {
     };
 
     // Function to get all users (admin only)
-    public shared(msg) func getAllUsers() : async Result.Result<[User], Text> {
+    public shared (msg) func getAllUsers() : async Result.Result<[User], Text> {
         if (not isAdmin(msg.caller)) {
             return #err("Only admin can view all users");
         };
-        #ok(Iter.toArray(users.vals()))
+        #ok(Iter.toArray(users.vals()));
+    };
+
+    public query func getInvoices(supplierPrincipal : Principal) : async [Invoice] {
+        Iter.toArray(Iter.filter(invoices.vals(), func(inv : Invoice) : Bool { inv.supplier == supplierPrincipal }));
     };
 
     // Get the role of a user
     public shared query (msg) func getUserRole() : async Result.Result<Role, Text> {
         switch (users.get(msg.caller)) {
             case (?user) {
-                #ok(user.role)
+                #ok(user.role);
             };
             case (null) {
-                #err("User not registered")
+                #err("User not registered");
             };
         };
     };
 
-    // Greet function (keeping it for compatibility)
-    public func greet(name : Text) : async Text {
-        return "Hello, " # name # "! Welcome to the Supply Chain Marketplace.";
+    // A private token for easy of use real world contracts might have actual tokens
+    private var tokenBalances = HashMap.HashMap<Principal, Nat>(10, Principal.equal, Principal.hash);
+    public shared (msg) func mintTokens(amount : Nat) : async Result.Result<(), Text> {
+        let currentBalance = Option.get(tokenBalances.get(msg.caller), 0);
+        tokenBalances.put(msg.caller, currentBalance + amount);
+        #ok();
+    };
+    public query func getTokenBalance(user: Principal) : async Nat {
+        Option.get(tokenBalances.get(user), 0)
+    };
+
+    private func transferTokens(from: Principal, to: Principal, amount: Nat) : Result.Result<(), Text> {
+        let fromBalance = Option.get(tokenBalances.get(from), 0);
+        if (fromBalance < amount) {
+            return #err("Insufficient balance");
+        };
+        let toBalance = Option.get(tokenBalances.get(to), 0);
+        tokenBalances.put(from, fromBalance - amount);
+        tokenBalances.put(to, toBalance + amount);
+        #ok()
     };
 };
