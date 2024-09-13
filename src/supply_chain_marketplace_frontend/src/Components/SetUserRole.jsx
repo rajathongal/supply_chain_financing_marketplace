@@ -8,6 +8,7 @@ import { styled } from "@mui/material/styles";
 import SitemarkIcon from "./SitemarkIcon";
 import { useAuth } from "../Context/useAuthClient";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -44,6 +45,7 @@ const SetUserRoleContainer = styled(Stack)(({ theme }) => ({
 const SetUserRole = () => {
   const { role, registerUserRole } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const registerAsInvestor = async() => {
      await registerUserRole({Investor: null})
@@ -58,7 +60,7 @@ const SetUserRole = () => {
  }
 
   React.useEffect(() => {
-    if (role) {
+    if (role && location.pathname == "/setuserrole") {
       navigate("/dashboard");
     }
   }, [role]);

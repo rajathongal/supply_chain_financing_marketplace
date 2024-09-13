@@ -29,7 +29,8 @@ const initialAuthState = {
   principal: null,
   marketplaceActor: null,
   role: "",
-  admin: ""
+  admin: "",
+  balance: 0,
 };
 
 export const defaultOptions = {
@@ -61,7 +62,7 @@ const reducer = (state, action) => {
         authClient,
         isInitialised,
         role,
-        admin
+        admin,
       } = action.payload;
 
       return {
@@ -73,7 +74,15 @@ const reducer = (state, action) => {
         authClient,
         isInitialised,
         role,
-        admin
+        admin,
+      };
+    }
+
+    case "UPDATE_BALANCE": {
+      const { balance } = action.payload;
+      return {
+        ...state,
+        balance,
       };
     }
     default: {
@@ -90,6 +99,8 @@ const AuthContext = createContext({
   updateClient: () => Promise.resolve(),
   setAdminFirstTime: () => Promise.resolve(),
   registerUserRole: () => Promise.resolve(),
+  getTokenBalance: () => Promise.resolve(),
+  mintTokens: () => Promise.resolve(),
 });
 
 export const AuthProvider = ({ children }) => {
@@ -98,7 +109,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Initialize AuthClient
     AuthClient.create(defaultOptions.createOptions).then(async (client) => {
-
       updateClient(client);
     });
   }, []);
@@ -116,22 +126,31 @@ export const AuthProvider = ({ children }) => {
     // Get current admin
     const currentAdmin = await actor.getAdmin();
     let admin = "";
-    if(currentAdmin.length != 0) {
-
+    if (currentAdmin.length != 0) {
       admin = currentAdmin[0].toText();
     }
 
-    let role = ""
+    let role = "";
     try {
       const roleResult = await actor.getUserRole();
-      if ('ok' in roleResult) {
-        const AnsArr = Object.keys(roleResult.ok)
+      if ("ok" in roleResult) {
+        const AnsArr = Object.keys(roleResult.ok);
         role = AnsArr[0];
       } else {
         console.error("Error getting user role:", roleResult.err);
       }
     } catch (error) {
       console.error("Error calling getUserRole:", error);
+    }
+
+    let balance = await actor.getTokenBalance(
+      principal
+    );
+    if(Number(balance) === 0) {
+      await actor.mintTokens(BigInt(100));
+      balance = await actor.getTokenBalance(
+        principal
+      );
     }
 
     dispatch({
@@ -144,7 +163,8 @@ export const AuthProvider = ({ children }) => {
         authClient: client,
         isInitialised: true,
         role: role,
-        admin
+        admin,
+        balance
       },
     });
   }
@@ -155,7 +175,6 @@ export const AuthProvider = ({ children }) => {
   }
 
   async function login() {
-
     state.authClient.login({
       ...defaultOptions.loginOptions,
       onSuccess: async () => {
@@ -165,13 +184,12 @@ export const AuthProvider = ({ children }) => {
   }
 
   async function setAdminFirstTime() {
-
     if (!state.marketplaceActor) {
       return;
     }
     try {
       const result = await state.marketplaceActor.setInitialAdmin();
-      if ('ok' in result) {
+      if ("ok" in result) {
         console.log("You are now set as the admin!");
       } else {
         console.log(`Failed to set admin: ${result.err}`);
@@ -183,21 +201,56 @@ export const AuthProvider = ({ children }) => {
   }
 
   async function registerUserRole(role) {
-
     if (!state.marketplaceActor) {
       return;
     }
     try {
       const result = await state.marketplaceActor.registerUser(role);
-      if ('ok' in result) {
-        console.log('User registered successfully!');
+      if ("ok" in result) {
+        console.log("User registered successfully!");
       } else {
         console.log(`Registration failed: ${result.err}`);
       }
     } catch (error) {
-      console.error('Error registering user:', error);
+      console.error("Error registering user:", error);
     }
     await updateClient(state.authClient);
+  }
+
+  async function getTokenBalance() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const balance = await state.marketplaceActor.getTokenBalance(
+        state.principal
+      );
+
+      dispatch({
+        type: "UPDATE_BALANCE",
+        payload: {
+          balance: Number(balance),
+        },
+      });
+    } catch (error) {
+      console.error("Error getting token balance:", error);
+    }
+  }
+
+  async function mintTokens() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.mintTokens(BigInt(100));
+      if ("ok" in result) {
+        getTokenBalance();
+      } else {
+        console.error(`Failed to mint tokens: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error minting tokens:", error);
+    }
   }
 
   return (
@@ -209,7 +262,9 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateClient,
         setAdminFirstTime,
-        registerUserRole
+        registerUserRole,
+        getTokenBalance,
+        mintTokens
       }}
     >
       {children}

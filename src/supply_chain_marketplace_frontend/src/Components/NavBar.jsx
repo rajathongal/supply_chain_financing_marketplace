@@ -69,22 +69,28 @@ export default function AppAppBar() {
               >
                 Home
               </Button>
-              <Button
-                variant="text"
-                color="info"
-                size="small"
-                onClick={() => navigate("/dashboard")}
-              >
-                Dashboard
-              </Button>
-              <Button
-                variant="text"
-                color="info"
-                size="small"
-                onClick={() => navigate("/wallet")}
-              >
-                Wallet
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <Button
+                    variant="text"
+                    color="info"
+                    size="small"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    Dashboard
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="info"
+                    size="small"
+                    onClick={() => navigate("/wallet")}
+                  >
+                    Wallet
+                  </Button>
+                </>
+              ) : (
+                <></>
+              )}
             </Box>
           </Box>
           <Box
@@ -138,11 +144,15 @@ export default function AppAppBar() {
                 </Box>
                 <Divider sx={{ my: 3 }} />
                 <MenuItem onClick={() => navigate("/")}>Home</MenuItem>
-                <MenuItem onClick={() => navigate("/dashboard")}>
-                  Dashboard
-                </MenuItem>
+
                 {isAuthenticated ? (
                   <>
+                    <MenuItem onClick={() => navigate("/dashboard")}>
+                      Dashboard
+                    </MenuItem>
+                    <MenuItem onClick={() => navigate("/wallet")}>
+                      Wallet
+                    </MenuItem>
                     <MenuItem>
                       <Chip color="primary" label={`Role - ${role}`} />
                     </MenuItem>

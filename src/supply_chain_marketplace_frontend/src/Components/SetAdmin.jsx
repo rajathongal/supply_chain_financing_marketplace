@@ -9,6 +9,7 @@ import { styled } from "@mui/material/styles";
 import SitemarkIcon from "./SitemarkIcon";
 import { useAuth } from "../Context/useAuthClient";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -46,14 +47,14 @@ const SetAdminContainer = styled(Stack)(({ theme }) => ({
 const SetAdmin = () => {
   const { admin, setAdminFirstTime } = useAuth();
   const navigate = useNavigate();
-
+  const location = useLocation();
   const handleSetAdmin = async(e) => {
     e.preventDefault();
     await setAdminFirstTime();
   }
 
   React.useEffect(() => {
-    if(admin) {
+    if(admin && location.pathname == "/setadmin") {
       navigate('/');
     }
   }, [admin])

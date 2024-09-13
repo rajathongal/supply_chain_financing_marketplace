@@ -13,8 +13,6 @@ const GuestGuard = ({ children }) => {
     } else {
       return <>{children}</>;
     }
-  } else {
-    return <Navigate to="/" replace={true} />;
   }
 };
 
