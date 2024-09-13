@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "setup": "npm i && dfx canister create supply_chain_marketplace_backend && dfx generate supply_chain_marketplace_backend && dfx deps pull && dfx deps init --argument '(null)' internet-identity && dfx deps deploy && dfx deploy",
-    "start": "vite --port 3000",
+    "start": "vite --port 3001",
     "prebuild": "dfx generate",
     "build": "tsc && vite build",
     "format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
