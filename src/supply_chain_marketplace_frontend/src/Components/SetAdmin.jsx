@@ -9,7 +9,7 @@ import { styled } from "@mui/material/styles";
 import SitemarkIcon from "./SitemarkIcon";
 import { useAuth } from "../Context/useAuthClient";
 import { useNavigate } from "react-router-dom";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -43,55 +43,67 @@ const SetAdminContainer = styled(Stack)(({ theme }) => ({
   }),
 }));
 
-
 const SetAdmin = () => {
+  const [isDisabled, setIsDisabled] = React.useState(false);
+
   const { admin, setAdminFirstTime } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const handleSetAdmin = async(e) => {
+  const toggleDisabled = () => {
+    setIsDisabled(!isDisabled);
+  };
+  const handleSetAdmin = async (e) => {
     e.preventDefault();
+    toggleDisabled();
+
     await setAdminFirstTime();
-  }
+    toggleDisabled();
+  };
 
   React.useEffect(() => {
-    if(admin && location.pathname == "/setadmin") {
-      navigate('/');
+    if (admin && location.pathname == "/setadmin") {
+      navigate("/");
     }
-  }, [admin])
+  }, [admin]);
 
   return (
     <SetAdminContainer direction="column" justifyContent="space-between">
-    <Card variant="outlined">
-      <SitemarkIcon />
-      <Typography
-        component="h1"
-        variant="h4"
-        sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-      >
-        Set Admin
-      </Typography>
-      <Box
-        component="form"
-        noValidate
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          gap: 2,
-        }}
-      >
-        <Divider></Divider>
-
-        <Button type="submit" fullWidth variant="contained" onClick={handleSetAdmin}>
-          Proceed
-        </Button>
-        <Typography sx={{ textAlign: "center" }}>
-          Click Proceed to set you as admin
+      <Card variant="outlined">
+        <SitemarkIcon />
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+        >
+          Set Admin
         </Typography>
-      </Box>
-    </Card>
-  </SetAdminContainer>
-  )
-}
+        <Box
+          component="form"
+          noValidate
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            gap: 2,
+          }}
+        >
+          <Divider></Divider>
 
-export default SetAdmin
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            onClick={handleSetAdmin}
+          >
+            Proceed
+          </Button>
+          <Typography sx={{ textAlign: "center" }}>
+            Click Proceed to set you as admin
+          </Typography>
+        </Box>
+      </Card>
+    </SetAdminContainer>
+  );
+};
+
+export default SetAdmin;

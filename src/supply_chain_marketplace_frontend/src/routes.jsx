@@ -10,6 +10,7 @@ import GuestGuard from "./Guards/GuestGuard";
 import HomeGuard from "./Guards/HomeGuard";
 import AdminGuard from "./Guards/AdminGuard";
 import UserRoleGuard from "./Guards/UserRoleGuard";
+import { useAuth } from "./Context/useAuthClient";
 
 // pages Imports
 const Home = lazy(() => import("./Pages/Home"));
@@ -19,7 +20,10 @@ const SetAdmin = lazy(() => import("./Pages/SetAdmin"));
 const SetUserRole = lazy(() => import("./Pages/SetUserRole"));
 const Wallet = lazy(() => import("./Pages/Wallet"));
 
-const RenderRoutes = () => (
+const RenderRoutes = () =>{
+  const { role } = useAuth();
+
+  return (
   <Routes>
     {routes.map((route, i) => {
       const Guard = route.guard || Fragment;
@@ -49,7 +53,7 @@ const RenderRoutes = () => (
                         {route.routes ? (
                           renderRoutes(route.routes)
                         ) : (
-                          <route.component />
+                          <route.component role={role}/>
                         )}
                       </Suspense>
                     </Layout>
@@ -62,7 +66,7 @@ const RenderRoutes = () => (
       );
     })}
   </Routes>
-);
+)};
 
 const routes = [
   {

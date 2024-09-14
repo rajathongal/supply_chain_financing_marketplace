@@ -43,20 +43,38 @@ const SetUserRoleContainer = styled(Stack)(({ theme }) => ({
 }));
 
 const SetUserRole = () => {
+  const [isDisabled, setIsDisabled] = React.useState(false);
+
   const { role, registerUserRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const toggleDisabled = () => {
+    setIsDisabled(!isDisabled);
+  };
+
   const registerAsInvestor = async() => {
-     await registerUserRole({Investor: null})
+    toggleDisabled();
+
+     await registerUserRole({Investor: null});
+    toggleDisabled();
+
   }
 
   const registerAsSupplier = async() => {
+    toggleDisabled();
+
      await registerUserRole({Supplier: null})
+    toggleDisabled();
+
   }
 
   const registerAsBuyer = async() => {
+    toggleDisabled();
+
     await registerUserRole({Buyer: null})
+    toggleDisabled();
+
  }
 
   React.useEffect(() => {
@@ -66,7 +84,7 @@ const SetUserRole = () => {
   }, [role]);
 
   return (
-    <SetUserRoleContainer direction="column" justifyContent="space-between" width={{xs: "40vh", md: "50vh"}}>
+    <SetUserRoleContainer direction="column" justifyContent="space-between" width={{xs: "40vh", md: "80vh"}}>
       <Card variant="outlined">
         <SitemarkIcon />
         <Typography
@@ -94,6 +112,7 @@ const SetUserRole = () => {
           <Button
             fullWidth
             variant="contained"
+            disabled={isDisabled}
             onClick={registerAsSupplier}
           >
             As Supplier
@@ -101,6 +120,7 @@ const SetUserRole = () => {
           <Button
             fullWidth
             variant="contained"
+            disabled={isDisabled}
             onClick={registerAsInvestor}
           >
             As Investor
@@ -108,6 +128,7 @@ const SetUserRole = () => {
           <Button
             fullWidth
             variant="contained"
+            disabled={isDisabled}
             onClick={registerAsBuyer}
           >
             As Buyer

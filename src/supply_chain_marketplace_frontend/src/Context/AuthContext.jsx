@@ -31,6 +31,8 @@ const initialAuthState = {
   role: "",
   admin: "",
   balance: 0,
+  buyerIdentity: "",
+  supplierProfile: null,
 };
 
 export const defaultOptions = {
@@ -63,6 +65,9 @@ const reducer = (state, action) => {
         isInitialised,
         role,
         admin,
+        balance,
+        buyerIdentity,
+        supplierProfile
       } = action.payload;
 
       return {
@@ -75,6 +80,9 @@ const reducer = (state, action) => {
         isInitialised,
         role,
         admin,
+        balance,
+        buyerIdentity,
+        supplierProfile
       };
     }
 
@@ -83,6 +91,22 @@ const reducer = (state, action) => {
       return {
         ...state,
         balance,
+      };
+    }
+
+    case "GET_BUYER_INFO": {
+      const { buyerIdentity } = action.payload;
+      return {
+        ...state,
+        buyerIdentity,
+      };
+    }
+
+    case "GET_SUPPLIER_INFO": {
+      const { supplierProfile } = action.payload;
+      return {
+        ...state,
+        supplierProfile,
       };
     }
     default: {
@@ -101,6 +125,10 @@ const AuthContext = createContext({
   registerUserRole: () => Promise.resolve(),
   getTokenBalance: () => Promise.resolve(),
   mintTokens: () => Promise.resolve(),
+  getBuyer: () => Promise.resolve(),
+  registerBuyer: () => Promise.resolve(),
+  registerSupplierProfile: () => Promise.resolve(),
+  getSupplier: () => Promise.resolve(),
 });
 
 export const AuthProvider = ({ children }) => {
@@ -143,14 +171,36 @@ export const AuthProvider = ({ children }) => {
       console.error("Error calling getUserRole:", error);
     }
 
-    let balance = await actor.getTokenBalance(
-      principal
-    );
-    if(Number(balance) === 0) {
+    let balance = await actor.getTokenBalance(principal);
+    if (Number(balance) === 0) {
       await actor.mintTokens(BigInt(100));
-      balance = await actor.getTokenBalance(
-        principal
-      );
+      balance = await actor.getTokenBalance(principal);
+    }
+
+    let buyerIdentity = "";
+    try {
+      const result = await actor.getBuyer(principal);
+
+      if ("ok" in result) {
+        buyerIdentity = result.ok.name
+      } else {
+        console.error(`Error: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error getting buyer:", error);
+    }
+
+    let supplierProfile = null;
+    try {
+      const result = await actor.getSupplier(principal);
+
+      if ("ok" in result) {
+        supplierProfile = result.ok
+      } else {
+        console.error(`Error: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error getting buyer:", error);
     }
 
     dispatch({
@@ -164,7 +214,9 @@ export const AuthProvider = ({ children }) => {
         isInitialised: true,
         role: role,
         admin,
-        balance
+        balance,
+        buyerIdentity,
+        supplierProfile
       },
     });
   }
@@ -253,6 +305,94 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  async function getBuyer() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.getBuyer(state.principal);
+
+      if ("ok" in result) {
+        dispatch({
+          type: "GET_BUYER_INFO",
+          payload: {
+            buyerIdentity: result.ok.name
+          }
+
+        })
+      } else {
+        console.error(`Error: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error getting buyer:", error);
+    }
+  }
+
+  async function registerBuyer(
+    buyerName,
+    setBuyerNameError,
+    setbuyerNameErrorMessage
+  ) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.registerBuyer(buyerName);
+      if ("ok" in result) {
+        console.log("Buyer registered successfully");
+        return;
+      } else {
+        console.error(`Failed to register buyer: ${result.err}`);
+        setBuyerNameError(true);
+        setbuyerNameErrorMessage(`Failed to register buyer: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error registering buyer:", error);
+      setBuyerNameError(true);
+      setbuyerNameErrorMessage(`Error registering buyer: ${error}`);
+    }
+  }
+
+  async function registerSupplierProfile (name, description, categories){
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.registerSupplierProfile(name, description, categories);
+      if ('ok' in result) {
+        console.log('Supplier profile registered successfully');
+        return;
+      } else {
+        console.error(`Failed to register supplier profile: ${result.err}`);
+      }
+    } catch (error) {
+      console.error('Error registering supplier profile:', error);
+    }
+  };
+
+  async function getSupplier() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.getSupplier(state.principal);
+
+      if ("ok" in result) {
+        dispatch({
+          type: "GET_SUPPLIER_INFO",
+          payload: {
+            supplierProfile: result.ok
+          }
+
+        })
+      } else {
+        console.error(`Error: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error getting buyer:", error);
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -264,7 +404,11 @@ export const AuthProvider = ({ children }) => {
         setAdminFirstTime,
         registerUserRole,
         getTokenBalance,
-        mintTokens
+        mintTokens,
+        getBuyer,
+        registerBuyer,
+        registerSupplierProfile,
+        getSupplier
       }}
     >
       {children}

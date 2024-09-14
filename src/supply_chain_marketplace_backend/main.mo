@@ -33,7 +33,7 @@ actor SupplyChainMarketplace {
         id : Nat;
         buyerPrincipal : Principal;
         supplierPrincipal : Principal;
-        description: Text;
+        description : Text;
         amount : Nat;
         dueDate : Nat;
         status : { #Created; #Invoiced; #Paid };
@@ -90,7 +90,7 @@ actor SupplyChainMarketplace {
     private var purchaseOrders = HashMap.HashMap<Nat, PurchaseOrder>(10, Nat.equal, natHash);
     private var supplierProfiles = HashMap.HashMap<Principal, SupplierProfile>(10, Principal.equal, Principal.hash);
 
-    public shared(msg) func registerSupplierProfile(name: Text, description: Text, categories: [Text]) : async Result.Result<(), Text> {
+    public shared (msg) func registerSupplierProfile(name : Text, description : Text, categories : [Text]) : async Result.Result<(), Text> {
         if (not hasRole(msg.caller, #Supplier)) {
             return #err("Only suppliers can register a profile");
         };
@@ -101,17 +101,22 @@ actor SupplyChainMarketplace {
             categories = categories;
         };
         supplierProfiles.put(msg.caller, profile);
-        #ok()
+        #ok();
     };
 
     public query func getSupplierProfiles() : async [SupplierProfile] {
-        Iter.toArray(supplierProfiles.vals())
+        Iter.toArray(supplierProfiles.vals());
     };
 
-    public query func searchSuppliers(category: Text) : async [SupplierProfile] {
-        Iter.toArray(Iter.filter(supplierProfiles.vals(), func (profile: SupplierProfile) : Bool {
-            Array.find<Text>(profile.categories, func (c: Text) : Bool { c == category }) != null
-        }))
+    public query func searchSuppliers(category : Text) : async [SupplierProfile] {
+        Iter.toArray(
+            Iter.filter(
+                supplierProfiles.vals(),
+                func(profile : SupplierProfile) : Bool {
+                    Array.find<Text>(profile.categories, func(c : Text) : Bool { c == category }) != null;
+                },
+            )
+        );
     };
 
     // Function to set the initial admin
@@ -185,7 +190,7 @@ actor SupplyChainMarketplace {
     };
 
     // Create Purchase order
-    public shared (msg) func createPurchaseOrder(supplierPrincipal : Principal, amount : Nat, dueDate : Nat, description: Text) : async Result.Result<Nat, Text> {
+    public shared (msg) func createPurchaseOrder(supplierPrincipal : Principal, amount : Nat, dueDate : Nat, description : Text) : async Result.Result<Nat, Text> {
         if (not hasRole(msg.caller, #Buyer)) {
             return #err("Only buyers can create purchase orders");
         };
@@ -205,9 +210,9 @@ actor SupplyChainMarketplace {
                     status = #Created;
                 };
                 purchaseOrders.put(id, po);
-                #ok(id)
+                #ok(id);
             };
-        }
+        };
     };
 
     // Create a new invoice
@@ -370,6 +375,20 @@ actor SupplyChainMarketplace {
             case (null) {
                 #err("User not registered");
             };
+        };
+    };
+
+    public query func getBuyer(buyerPrincipal : Principal) : async Result.Result<Buyer, Text> {
+        switch (buyers.get(buyerPrincipal)) {
+            case (?buyer) { #ok(buyer) };
+            case null { #err("Buyer not found") };
+        };
+    };
+
+    public query func getSupplier(supplierPrincipal : Principal) : async Result.Result<SupplierProfile, Text> {
+        switch (supplierProfiles.get(supplierPrincipal)) {
+            case (?supplier) { #ok(supplier) };
+            case null { #err("Supplier not found") };
         };
     };
 

@@ -42,9 +42,18 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn() {
+  const [isDisabled, setIsDisabled] = React.useState(false);
+
   const { login } = useAuth();
+  const toggleDisabled = () => {
+    setIsDisabled(!isDisabled);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    toggleDisabled();
+    login();
+    toggleDisabled();
   };
 
   return (
@@ -71,11 +80,16 @@ export default function SignIn() {
         >
           <Divider></Divider>
 
-          <Button type="submit" fullWidth variant="contained" onClick={login}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isDisabled}
+          >
             Proceed
           </Button>
           <Typography sx={{ textAlign: "center" }}>
-            Don&apos;t have an account?{" "} Click Proceed
+            Don&apos;t have an account? Click Proceed
           </Typography>
         </Box>
       </Card>
