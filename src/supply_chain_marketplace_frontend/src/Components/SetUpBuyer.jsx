@@ -47,7 +47,7 @@ const SetBuyerRoleContainer = styled(Stack)(({ theme }) => ({
 const SetUpBuyer = () => {
   const [buyerNameError, setBuyerNameError] = React.useState(false);
   const [buyerNameErrorMessage, setbuyerNameErrorMessage] = React.useState("");
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [isDisabled, setIsDisabled] = React.useState(false);
 
   const navigate = useNavigate();
   const { registerBuyer } = useAuth();

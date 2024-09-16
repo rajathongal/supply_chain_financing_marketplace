@@ -59,7 +59,7 @@ const SetUpSupplier = () => {
   const [newCategory, setNewCategory] = useState("");
 
   const navigate = useNavigate();
-  const { registerSupplierProfile, supplierProfile } = useAuth();
+  const { registerSupplierProfile } = useAuth();
 
   const toggleDisabled = () => {
     setIsDisabled(!isDisabled);

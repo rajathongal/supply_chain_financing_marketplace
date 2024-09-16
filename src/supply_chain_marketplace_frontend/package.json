@@ -11,6 +11,7 @@
     "format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
   },
   "dependencies": {
+    "@date-io/date-fns": "^3.0.0",
     "@dfinity/agent": "^2.0.0",
     "@dfinity/auth-client": "^2.0.0",
     "@dfinity/candid": "^2.0.0",
@@ -21,11 +22,15 @@
     "@fontsource/roboto": "^5.0.14",
     "@mui/icons-material": "^6.0.2",
     "@mui/material": "^6.0.2",
+    "@mui/styled-engine-sc": "^6.1.0",
+    "@mui/x-date-pickers": "^7.17.0",
+    "date-fns": "^3.6.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet-async": "^2.0.5",
-    "react-router-dom": "^6.26.1"
+    "react-router-dom": "^6.26.1",
+    "styled-components": "^6.1.13"
   },
   "devDependencies": {
     "@types/react": "^18.2.14",

@@ -366,6 +366,10 @@ actor SupplyChainMarketplace {
         Iter.toArray(Iter.filter(invoices.vals(), func(inv : Invoice) : Bool { inv.supplier == supplierPrincipal }));
     };
 
+    public query func getBuyerInvoices(buyerPrincipal : Principal) : async [Invoice] {
+        Iter.toArray(Iter.filter(invoices.vals(), func(inv : Invoice) : Bool { inv.buyer == buyerPrincipal }));
+    };
+
     // Get the role of a user
     public shared query (msg) func getUserRole() : async Result.Result<Role, Text> {
         switch (users.get(msg.caller)) {

@@ -4,6 +4,7 @@ import {
   canisterId,
   createActor,
 } from "../../../declarations/supply_chain_marketplace_backend";
+import { Principal } from "@dfinity/principal";
 
 export const getIdentityProvider = () => {
   let idpProvider;
@@ -33,6 +34,10 @@ const initialAuthState = {
   balance: 0,
   buyerIdentity: "",
   supplierProfile: null,
+  supplierProfiles: [],
+  purchaseOrders: [],
+  invoices: [],
+  buyerInvoices: []
 };
 
 export const defaultOptions = {
@@ -67,7 +72,7 @@ const reducer = (state, action) => {
         admin,
         balance,
         buyerIdentity,
-        supplierProfile
+        supplierProfile,
       } = action.payload;
 
       return {
@@ -82,7 +87,7 @@ const reducer = (state, action) => {
         admin,
         balance,
         buyerIdentity,
-        supplierProfile
+        supplierProfile,
       };
     }
 
@@ -109,6 +114,38 @@ const reducer = (state, action) => {
         supplierProfile,
       };
     }
+
+    case "GET_SUPPLIER_PROFILES": {
+      const { supplierProfiles } = action.payload;
+      return {
+        ...state,
+        supplierProfiles,
+      };
+    }
+
+    case "GET_PURCHASE_ORDERS": {
+      const { purchaseOrders } = action.payload;
+      return {
+        ...state,
+        purchaseOrders,
+      };
+    }
+
+    case "GET_INVOICES": {
+      const { invoices } = action.payload;
+      return {
+        ...state,
+        invoices,
+      };
+    }
+    case "GET_BUYER_INVOICES": {
+      const { buyerInvoices } = action.payload;
+      return {
+        ...state,
+        buyerInvoices,
+      };
+    }
+
     default: {
       return { ...state };
     }
@@ -129,6 +166,13 @@ const AuthContext = createContext({
   registerBuyer: () => Promise.resolve(),
   registerSupplierProfile: () => Promise.resolve(),
   getSupplier: () => Promise.resolve(),
+  getSupplierProfiles: () => Promise.resolve(),
+  createPurchaseOrderFn: () => Promise.resolve(),
+  getPurchaseOrders: () => Promise.resolve(),
+  getBuyerByPP: () => Promise.resolve(),
+  createInvoice: () => Promise.resolve(),
+  getInvoices: () => Promise.resolve(),
+  getBuyerInvoices: () => Promise.resolve(),
 });
 
 export const AuthProvider = ({ children }) => {
@@ -182,7 +226,7 @@ export const AuthProvider = ({ children }) => {
       const result = await actor.getBuyer(principal);
 
       if ("ok" in result) {
-        buyerIdentity = result.ok.name
+        buyerIdentity = result.ok.name;
       } else {
         console.error(`Error: ${result.err}`);
       }
@@ -195,7 +239,7 @@ export const AuthProvider = ({ children }) => {
       const result = await actor.getSupplier(principal);
 
       if ("ok" in result) {
-        supplierProfile = result.ok
+        supplierProfile = result.ok;
       } else {
         console.error(`Error: ${result.err}`);
       }
@@ -216,7 +260,7 @@ export const AuthProvider = ({ children }) => {
         admin,
         balance,
         buyerIdentity,
-        supplierProfile
+        supplierProfile,
       },
     });
   }
@@ -316,10 +360,28 @@ export const AuthProvider = ({ children }) => {
         dispatch({
           type: "GET_BUYER_INFO",
           payload: {
-            buyerIdentity: result.ok.name
-          }
+            buyerIdentity: result.ok.name,
+          },
+        });
+      } else {
+        console.error(`Error: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error getting buyer:", error);
+    }
+  }
 
-        })
+  async function getBuyerByPP(principal) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.getBuyer(
+        Principal.fromText(principal)
+      );
+
+      if ("ok" in result) {
+        return result.ok.name;
       } else {
         console.error(`Error: ${result.err}`);
       }
@@ -353,22 +415,26 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  async function registerSupplierProfile (name, description, categories){
+  async function registerSupplierProfile(name, description, categories) {
     if (!state.marketplaceActor) {
       return;
     }
     try {
-      const result = await state.marketplaceActor.registerSupplierProfile(name, description, categories);
-      if ('ok' in result) {
-        console.log('Supplier profile registered successfully');
+      const result = await state.marketplaceActor.registerSupplierProfile(
+        name,
+        description,
+        categories
+      );
+      if ("ok" in result) {
+        console.log("Supplier profile registered successfully");
         return;
       } else {
         console.error(`Failed to register supplier profile: ${result.err}`);
       }
     } catch (error) {
-      console.error('Error registering supplier profile:', error);
+      console.error("Error registering supplier profile:", error);
     }
-  };
+  }
 
   async function getSupplier() {
     if (!state.marketplaceActor) {
@@ -381,16 +447,152 @@ export const AuthProvider = ({ children }) => {
         dispatch({
           type: "GET_SUPPLIER_INFO",
           payload: {
-            supplierProfile: result.ok
-          }
-
-        })
+            supplierProfile: result.ok,
+          },
+        });
       } else {
         console.error(`Error: ${result.err}`);
       }
     } catch (error) {
       console.error("Error getting buyer:", error);
     }
+  }
+
+  async function getSupplierProfiles() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const profiles = await state.marketplaceActor.getSupplierProfiles();
+
+      dispatch({
+        type: "GET_SUPPLIER_PROFILES",
+        payload: {
+          supplierProfiles: profiles,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting supplier profiles:", error);
+    }
+  }
+  async function getPurchaseOrders() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const profiles = await state.marketplaceActor.getPurchaseOrders(
+        state.principal
+      );
+
+      dispatch({
+        type: "GET_PURCHASE_ORDERS",
+        payload: {
+          purchaseOrders: profiles,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting supplier profiles:", error);
+    }
+  }
+  async function getInvoices() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const profiles = await state.marketplaceActor.getInvoices(
+        state.principal
+      );
+
+      dispatch({
+        type: "GET_INVOICES",
+        payload: {
+          invoices: profiles,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting supplier profiles:", error);
+    }
+  }
+  async function getBuyerInvoices() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const profiles = await state.marketplaceActor.getBuyerInvoices(
+        state.principal
+      );
+
+      dispatch({
+        type: "GET_BUYER_INVOICES",
+        payload: {
+          buyerInvoices: profiles,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting supplier profiles:", error);
+    }
+  }
+
+  function parseDate(dateString) {
+    const [day, month, year] = dateString.split("/");
+    return new Date(year, month - 1, day); // month is 0-indexed in JS Date
+  }
+
+  function getAdjustedTime(dateString) {
+    const date = parseDate(dateString);
+    return date.getTime(); // This gives milliseconds since epoch
+  }
+
+  async function createPurchaseOrderFn(
+    amount,
+    dueDate,
+    description,
+    principal,
+    setMessage
+  ) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const adjustedTime = getAdjustedTime(dueDate);
+      const result = await state.marketplaceActor.createPurchaseOrder(
+        Principal.fromText(principal),
+        BigInt(amount),
+        BigInt(adjustedTime * 1000000),
+        description
+      );
+      if ("ok" in result) {
+        console.log(`Purchase Order created with ID: ${result.ok}`);
+        setMessage(`Purchase Order created with ID: ${result.ok}`);
+      } else {
+        console.log(`Failed to create Purchase Order: ${result.err}`);
+        setMessage(`Failed to create Purchase Order: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error creating Purchase Order:", error);
+      setMessage(`Error creating Purchase Order:${error}`);
+    }
+    return;
+  }
+
+  async function createInvoice(id, setMessage) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.createInvoice(id);
+      if ("ok" in result) {
+        console.log(`Invoice created with ID: ${result.ok}`);
+        setMessage(`Invoice created with ID: ${result.ok}`);
+      } else {
+        console.log(`Failed to create Invoice: ${result.err}`);
+        setMessage(`Failed to create Invoice: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error creating Invoice:", error);
+      setMessage(`Error creating Invoice:${error}`);
+    }
+    return;
   }
 
   return (
@@ -408,7 +610,14 @@ export const AuthProvider = ({ children }) => {
         getBuyer,
         registerBuyer,
         registerSupplierProfile,
-        getSupplier
+        getSupplier,
+        getSupplierProfiles,
+        createPurchaseOrderFn,
+        getPurchaseOrders,
+        getBuyerByPP,
+        createInvoice,
+        getInvoices,
+        getBuyerInvoices
       }}
     >
       {children}
