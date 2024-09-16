@@ -64,7 +64,14 @@ const FundInvoice = () => {
     event.preventDefault();
     toggleDisabled();
     const fdData = new FormData(event.currentTarget);
-
+    if(fdData.get("fundingAmount") >= Number(data.amount)) {
+      setMessage("Enter Less than the amount on invoice to gain profits");
+      setTimeout(() => {
+        setMessage("");
+        toggleDisabled();
+      }, 5000);
+      return;
+    }
     fundInvoice(data.invoiceId, fdData.get("fundingAmount"), setMessage)
     setTimeout(() => {
       setMessage("");

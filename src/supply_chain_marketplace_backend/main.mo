@@ -282,8 +282,8 @@ actor SupplyChainMarketplace {
                 if (invoice.status != #Created) {
                     return #err("Invoice is not available for funding");
                 };
-                if (fundingAmount > invoice.amount) {
-                    return #err("Funding amount cannot be greater than invoice amount");
+                if (fundingAmount >= invoice.amount) {
+                    return #err("Funding amount must be less than invoice amount to allow for profit");
                 };
                 let transferResult = transferTokens(msg.caller, invoice.supplier, fundingAmount);
                 switch (transferResult) {
@@ -316,18 +316,27 @@ actor SupplyChainMarketplace {
                 if (invoice.status != #Funded) {
                     return #err("Invoice is not funded");
                 };
-                let transferResult = transferTokens(msg.caller, invoice.supplier, invoice.amount);
-                switch (transferResult) {
-                    case (#err(e)) { return #err(e) };
-                    case (#ok()) {
-                        invoices.put(invoiceId, { invoice with status = #Paid });
-                        // Transfer funds to the investor
-                        for (investment in investments.vals()) {
-                            if (investment.invoiceId == invoiceId) {
-                                ignore transferTokens(invoice.supplier, investment.investor, investment.expectedReturn);
+                var investorToPay : ?Principal = null;
+                var amountToPay : Nat = 0;
+                for (investment in investments.vals()) {
+                    if (investment.invoiceId == invoiceId) {
+                        investorToPay := ?investment.investor;
+                        amountToPay := investment.expectedReturn;
+                    };
+                };
+                switch (investorToPay) {
+                    case (null) {
+                        return #err("No investor found for this invoice");
+                    };
+                    case (?investor) {
+                        let transferResult = transferTokens(msg.caller, investor, amountToPay);
+                        switch (transferResult) {
+                            case (#err(e)) { return #err(e) };
+                            case (#ok()) {
+                                invoices.put(invoiceId, { invoice with status = #Paid });
+                                #ok();
                             };
                         };
-                        #ok();
                     };
                 };
             };

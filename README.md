@@ -6,15 +6,11 @@ Part of Coinstore Labs - ICP Web 3.0 Collision Hackathon (ICP Chain Fusion)
 
 ```cmd
 // Terminal 1
-
-dfx deps pull
-dfx deps init --argument '(null)' internet-identity
-dfx deps deploy
-
-// Terminal 2
 dfx start --clean
 
-// Terminal 1
+// Terminal 2
+cd src/supply_chain_marketplace_frontend/
+npm run setup
 dfx deploy
 ```
 

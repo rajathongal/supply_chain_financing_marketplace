@@ -50,7 +50,7 @@ const InvestorInvestmentList = () => {
           <TableHead>
             <TableRow>
               <TableCell>InvoiceId</TableCell>
-              <TableCell>Amount</TableCell>
+              <TableCell>Amount Funded</TableCell>
               <TableCell>Expected Returns</TableCell>
             </TableRow>
           </TableHead>
