@@ -70,7 +70,8 @@ const Wallet = () => {
     <SetUserRoleContainer
       direction="column"
       justifyContent="space-between"
-      width={{ xs: "40vh", md: "50vh" }}
+      width={{ xs: "50vh", sm: "50vh", md: "60vh" }}
+      mt={{sm: "30vh"}}
     >
       <Card variant="outlined">
         <SitemarkIcon />

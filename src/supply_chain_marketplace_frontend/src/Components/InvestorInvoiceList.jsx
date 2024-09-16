@@ -17,10 +17,10 @@ import { useAuth } from "../Context/useAuthClient";
 import { useNavigate } from "react-router-dom";
 import { Check, Close } from "@mui/icons-material";
 
-const BuyerInvoiceList = () => {
+const InvestorInvoiceList = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const { getBuyerInvoices, buyerInvoices } = useAuth();
+  const { getUnfundedInvoices, unFundedInvoices } = useAuth();
   const navigate = useNavigate();
 
   const handleChangePage = (event, newPage) => {
@@ -36,11 +36,11 @@ const BuyerInvoiceList = () => {
     data.buyer = data.buyer.toString();
     data.supplier = data.supplier.toString();
 
-    navigate("/payinvoice", { state: data });
+    navigate("/fundinvoice", { state: data });
   };
 
   useEffect(() => {
-    getBuyerInvoices();
+    getUnfundedInvoices();
   }, []);
 
   return (
@@ -60,8 +60,8 @@ const BuyerInvoiceList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {buyerInvoices.length > 0 ? (
-              buyerInvoices
+            {unFundedInvoices.length > 0 ? (
+              unFundedInvoices
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((invoice, index) => {
                   return (
@@ -76,7 +76,7 @@ const BuyerInvoiceList = () => {
                       </TableCell>
                       <TableCell>{Object.keys(invoice.status)[0]}</TableCell>
                       <TableCell>
-                        {Object.keys(invoice.status)[0] === "Funded" &&
+                        {Object.keys(invoice.status)[0] !== "Funded" &&
                         Object.keys(invoice.status)[0] !== "Paid" ? (
                           <Button
                             variant="contained"
@@ -88,7 +88,7 @@ const BuyerInvoiceList = () => {
                               wordWrap: "break-word",
                             }}
                           >
-                            <Typography noWrap>Pay Invoice</Typography>
+                            <Typography noWrap>Fund Invoice</Typography>
                           </Button>
                         ) : (
                           <Button
@@ -101,7 +101,7 @@ const BuyerInvoiceList = () => {
                               wordWrap: "break-word",
                             }}
                           >
-                            <Typography noWrap>Invoice Not Funded</Typography>
+                            <Typography noWrap>Invoice Funded</Typography>
                           </Button>
                         )}
                       </TableCell>
@@ -112,7 +112,7 @@ const BuyerInvoiceList = () => {
               <TableRow>
                 <TableCell colSpan={4} align="center">
                   <Typography variant="body1">
-                    No invoices available.
+                    No invoices available to fund.
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -123,7 +123,7 @@ const BuyerInvoiceList = () => {
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={buyerInvoices.length}
+        count={unFundedInvoices.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
@@ -133,4 +133,4 @@ const BuyerInvoiceList = () => {
   );
 };
 
-export default BuyerInvoiceList;
+export default InvestorInvoiceList;

@@ -17,10 +17,10 @@ import { useAuth } from "../Context/useAuthClient";
 import { useNavigate } from "react-router-dom";
 import { Check, Close } from "@mui/icons-material";
 
-const BuyerInvoiceList = () => {
+const InvestorInvestmentList = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const { getBuyerInvoices, buyerInvoices } = useAuth();
+  const { getInvestorInvestments, investments } = useAuth();
   const navigate = useNavigate();
 
   const handleChangePage = (event, newPage) => {
@@ -33,14 +33,12 @@ const BuyerInvoiceList = () => {
   };
 
   const handlePayInvoice = async (data) => {
-    data.buyer = data.buyer.toString();
-    data.supplier = data.supplier.toString();
 
-    navigate("/payinvoice", { state: data });
+    navigate("/checkinvoice", { state: data });
   };
 
   useEffect(() => {
-    getBuyerInvoices();
+    getInvestorInvestments();
   }, []);
 
   return (
@@ -52,32 +50,22 @@ const BuyerInvoiceList = () => {
           <TableHead>
             <TableRow>
               <TableCell>InvoiceId</TableCell>
-              <TableCell>Purchase Order Id</TableCell>
               <TableCell>Amount</TableCell>
-              <TableCell>DueDate</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Pay</TableCell>
+              <TableCell>Expected Returns</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {buyerInvoices.length > 0 ? (
-              buyerInvoices
+            {investments.length > 0 ? (
+              investments
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((invoice, index) => {
                   return (
                     <TableRow key={index}>
                       <TableCell>{Number(invoice.invoiceId)}</TableCell>
-                      <TableCell>{Number(invoice.purchaseOrderId)}</TableCell>
                       <TableCell>{Number(invoice.amount)}</TableCell>
+                      <TableCell>{Number(invoice.expectedReturn)}</TableCell>
                       <TableCell>
-                        {new Date(
-                          Number(invoice.dueDate) / 1000000
-                        ).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>{Object.keys(invoice.status)[0]}</TableCell>
-                      <TableCell>
-                        {Object.keys(invoice.status)[0] === "Funded" &&
-                        Object.keys(invoice.status)[0] !== "Paid" ? (
+                        {
                           <Button
                             variant="contained"
                             color="primary"
@@ -88,22 +76,9 @@ const BuyerInvoiceList = () => {
                               wordWrap: "break-word",
                             }}
                           >
-                            <Typography noWrap>Pay Invoice</Typography>
+                            <Typography noWrap>Check Invoice</Typography>
                           </Button>
-                        ) : (
-                          <Button
-                            variant="contained"
-                            color="info"
-                            disabled
-                            sx={{
-                              width: "fit-content",
-                              whiteSpace: "normal",
-                              wordWrap: "break-word",
-                            }}
-                          >
-                            <Typography noWrap>Invoice Not Funded</Typography>
-                          </Button>
-                        )}
+                        }
                       </TableCell>
                     </TableRow>
                   );
@@ -123,7 +98,7 @@ const BuyerInvoiceList = () => {
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={buyerInvoices.length}
+        count={investments.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
@@ -133,4 +108,4 @@ const BuyerInvoiceList = () => {
   );
 };
 
-export default BuyerInvoiceList;
+export default InvestorInvestmentList;

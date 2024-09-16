@@ -4,11 +4,9 @@ import { useAuth } from "../Context/useAuthClient";
 import { Navigate } from "react-router-dom";
 
 const AdminGuard = ({ children }) => {
-  const { isAuthenticated, admin } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  if (isAuthenticated && !admin) {
-    return <>{children}</>;
-  } else if (isAuthenticated && admin) {
+  if (isAuthenticated) {
     return <Navigate to="/dashboard" />;
   } else {
     return <Navigate to="/signin" />;

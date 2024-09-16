@@ -21,6 +21,9 @@ const SetUserRole = lazy(() => import("./Pages/SetUserRole"));
 const Wallet = lazy(() => import("./Pages/Wallet"));
 const CreatePurchaseOrder = lazy(() => import("./Components/CreatePurchaseOrder"));
 const CreateInvoice = lazy(() => import("./Components/CreateInvoice"));
+const PayInvoice = lazy(() => import("./Components/PayInvoice"));
+const FundInvoice = lazy(() => import("./Components/FundInvoice"));
+const CheckInvoice = lazy(() => import("./Components/CheckInvoice"));
 
 const RenderRoutes = () =>{
   const { role } = useAuth();
@@ -72,7 +75,7 @@ const RenderRoutes = () =>{
 
 const routes = [
   {
-    guard: HomeGuard,
+    guard: NoGuard,
     path: "/",
     component: Home,
     title: "Home",
@@ -118,6 +121,24 @@ const routes = [
     path: "/createInvoice",
     component: CreateInvoice,
     title: "Create Invoice"
+  },
+  {
+    guard: GuestGuard,
+    path: "/payinvoice",
+    component: PayInvoice,
+    title: "Pay Invoice"
+  },
+  {
+    guard: GuestGuard,
+    path: "/fundinvoice",
+    component: FundInvoice,
+    title: "Fund Invoice"
+  },
+  {
+    guard: GuestGuard,
+    path: "/checkinvoice",
+    component: CheckInvoice,
+    title: "Check Invoice"
   }
 ];
 

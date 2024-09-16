@@ -6,12 +6,12 @@ import { Navigate } from "react-router-dom";
 const UserRoleGuard = ({ children }) => {
   const { isAuthenticated, admin, role } = useAuth();
 
-  if (isAuthenticated && admin && !role) {
+  if (isAuthenticated && !role) {
     return <>{children}</>;
-  } else if (isAuthenticated && admin && role) {
+  } else if (isAuthenticated && role) {
     return <Navigate to="/dashboard" />;
   } else {
-    return <Navigate to="/signin" />;
+    return <Navigate to="/" />;
   }
 };
 

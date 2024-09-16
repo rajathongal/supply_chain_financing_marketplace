@@ -43,6 +43,12 @@ export default function AppAppBar() {
     return navigate("/signin");
   };
 
+  const onLogout = async() => {
+
+    logout()
+    navigate("/");
+
+  }
   return (
     <AppBar
       position="fixed"
@@ -107,8 +113,9 @@ export default function AppAppBar() {
                   color="primary"
                   variant="contained"
                   size="small"
-                  onClick={logout}
+                  onClick={() => {onLogout()}}
                 >
+
                   Logout
                 </Button>
               </Stack>

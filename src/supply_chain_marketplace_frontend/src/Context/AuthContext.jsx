@@ -37,7 +37,9 @@ const initialAuthState = {
   supplierProfiles: [],
   purchaseOrders: [],
   invoices: [],
-  buyerInvoices: []
+  buyerInvoices: [],
+  unFundedInvoices: [],
+  investments: []
 };
 
 export const defaultOptions = {
@@ -145,6 +147,20 @@ const reducer = (state, action) => {
         buyerInvoices,
       };
     }
+    case "GET_UNFUNDED_INVOICES": {
+      const { unFundedInvoices } = action.payload;
+      return {
+        ...state,
+        unFundedInvoices,
+      };
+    }
+    case "GET_INVESTMENTS": {
+      const { investments } = action.payload;
+      return {
+        ...state,
+        investments,
+      };
+    }
 
     default: {
       return { ...state };
@@ -173,6 +189,12 @@ const AuthContext = createContext({
   createInvoice: () => Promise.resolve(),
   getInvoices: () => Promise.resolve(),
   getBuyerInvoices: () => Promise.resolve(),
+  getSupplierByPP: () => Promise.resolve(),
+  payInvoice: () => Promise.resolve(),
+  getUnfundedInvoices: () => Promise.resolve(),
+  fundInvoice: () => Promise.resolve(),
+  getInvestorInvestments: () => Promise.resolve(),
+  getInvoiceByPP: () => Promise.resolve(),
 });
 
 export const AuthProvider = ({ children }) => {
@@ -268,6 +290,7 @@ export const AuthProvider = ({ children }) => {
   async function logout() {
     await state.authClient?.logout();
     await updateClient(state.authClient);
+    return;
   }
 
   async function login() {
@@ -457,6 +480,42 @@ export const AuthProvider = ({ children }) => {
       console.error("Error getting buyer:", error);
     }
   }
+  async function getSupplierByPP(principal) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.getSupplier(
+        Principal.fromText(principal)
+      );
+
+      if ("ok" in result) {
+        return result.ok.name;
+      } else {
+        console.error(`Error: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error getting buyer:", error);
+    }
+  }
+  async function getInvoiceByPP(id) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const result = await state.marketplaceActor.getInvoice(
+        id
+      );
+
+      if (result.length > 0) {
+        return result[0];
+      } else {
+        console.error(`Error: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error getting buyer:", error);
+    }
+  }
 
   async function getSupplierProfiles() {
     if (!state.marketplaceActor) {
@@ -595,6 +654,98 @@ export const AuthProvider = ({ children }) => {
     return;
   }
 
+  async function payInvoice(id, amount, setMessage) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      let balance = await state.marketplaceActor.getTokenBalance(state.principal);
+
+      if (Number(amount) > Number(balance)) {
+        const mint = Number(amount) - Number(balance);
+        console.log(mint)
+        await state.marketplaceActor.mintTokens(BigInt(mint));
+      }
+      const result = await state.marketplaceActor.payInvoice(id);
+      if ("ok" in result) {
+        console.log(`Invoice Payed with ID: ${result.ok}`);
+        setMessage(`Invoice Payed with ID: ${result.ok}`);
+      } else {
+        console.log(`Failed to pay Invoice: ${result.err}`);
+        setMessage(`Failed to pay Invoice: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error paying Invoice:", error);
+      setMessage(`Error paying Invoice:${error}`);
+    }
+    return;
+  }
+
+  async function getUnfundedInvoices() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const profiles = await state.marketplaceActor.listAvailableInvoices();
+
+      dispatch({
+        type: "GET_UNFUNDED_INVOICES",
+        payload: {
+          unFundedInvoices: profiles,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting unfunded invoices:", error);
+    }
+  }
+  async function getInvestorInvestments() {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      const profiles = await state.marketplaceActor.getInvestmentDetails(state.principal);
+
+      dispatch({
+        type: "GET_INVESTMENTS",
+        payload: {
+          investments: profiles,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting unfunded invoices:", error);
+    }
+  }
+
+  async function fundInvoice(id, fundingAmount, setMessage) {
+    if (!state.marketplaceActor) {
+      return;
+    }
+    try {
+      let balance = await state.marketplaceActor.getTokenBalance(state.principal);
+
+      if (Number(fundingAmount) > Number(balance)) {
+        const mint = Number(fundingAmount) - Number(balance);
+        await state.marketplaceActor.mintTokens(mint);
+      }
+
+      const result = await state.marketplaceActor.fundInvoice(
+        id,
+        BigInt(fundingAmount)
+      );
+      if ("ok" in result) {
+        console.log(`Invoice funded with ID: ${result.ok}`);
+        setMessage(`Invoice funded with ID: ${result.ok}`);
+      } else {
+        console.log(`Failed to fund Invoice: ${result.err}`);
+        setMessage(`Failed to fund Invoice: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error fund Invoice:", error);
+      setMessage(`Error fund Invoice:${error}`);
+    }
+    return;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -617,7 +768,13 @@ export const AuthProvider = ({ children }) => {
         getBuyerByPP,
         createInvoice,
         getInvoices,
-        getBuyerInvoices
+        getBuyerInvoices,
+        getSupplierByPP,
+        payInvoice,
+        getUnfundedInvoices,
+        fundInvoice,
+        getInvestorInvestments,
+        getInvoiceByPP
       }}
     >
       {children}
